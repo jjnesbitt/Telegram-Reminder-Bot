@@ -5,7 +5,6 @@ const axios = require('axios')
 
 const BOT_TOKEN = '459017535:AAFl8jUbmKWHYGA2aAtE7tlHBRcStXjFoG0';
 
-
 //In milliseconds
 const time_units = {
     minute: 60000,
@@ -24,7 +23,23 @@ app.use(bodyParser.urlencoded({
 
 //Function called to forward message, usually set on a timer.
 function forwardMessage(chat_id, from_chat_id, message_id){
-    console.log('yoooo');
+    console.log('Forward Message');
+
+    axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/forwardMessage', {
+        chat_id: message.chat.id,
+        from_chat_id: from_chat_id,
+        message_id: message_id
+    })
+        .then(response => {
+            // We get here if the message was successfully posted
+            console.log('Message posted')
+            res.end('ok')
+        })
+        .catch(err => {
+            // ...and here if it was not
+            console.log('Error :', err)
+            res.end('Error :' + err)
+        });
 }
 
 //This is the route the API will call
@@ -39,21 +54,27 @@ app.post('/new-message', function(req, res) {
     else{
         var matched = false;
 
+        console.log(message.text);
+
         for (var key in time_units){
+            console.log("key: " + key);
             var regex = new RegExp("(\\d{1,10}.?\\d{0,10}) " + key);
-            if ((match = regex.exec(message)) != null){
+            if ((match = regex.exec(message.text)) != null){
                 //Means valid number has been matched
 
                 var num = match[1];
+                console.log('match: ' + match[1]);
                 match.push(key);
             }
         }
 
         if (!match){
+            console.log("No match found!");
             return res.end();
         }
     }
 
+    console.log("Continuing...");
     var timeToWait = match[1]*time_units[match[match.length-1]];
 
     setTimeout(forwardMessage(message.from.id, message.chat.id, message.id), timeToWait);
@@ -77,6 +98,6 @@ app.post('/new-message', function(req, res) {
 });
 
 // Finally, start our server
-app.listen(3000, function() {
-    console.log('Telegram app listening on port 3000!');
+app.listen(443, function() {
+    console.log('Telegram app listening on port 443!');
 });
