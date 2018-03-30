@@ -1,0 +1,1 @@
+sudo curl -F "url=https://aafl8jubmkwhyga2aate7tlhbrcstxjfog0.jakenesbitt.com" -F "certificate=@/etc/ssl/certs/apache-selfsigned.crt" "https://api.telegram.org/bot459017535:AAHOlNDZ1lRwzpo_-34daWHuZpUXkQ8M4Ec/setWebhook"

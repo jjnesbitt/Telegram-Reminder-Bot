@@ -16,20 +16,6 @@ const SSL_OPTIONS = {
 
 const GET_UPDATE_URL = 'https://api.telegram.org/bot' + BOT_TOKEN + "/getUpdates";
 
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({
-    extended: true
-})); // for parsing application/x-www-form-urlencoded
-
-
-log4js.configure({
-	appenders: { normal: { type: 'file', filename: 'live.log' } },
-    categories: { default: { appenders: ['normal'], level: 'debug' }}
-});
-
-var logger = log4js.getLogger('normal');
-
-
 //In milliseconds
 const time_units = {
     second: 1000,
@@ -45,6 +31,7 @@ const time_units = {
 setTimeout(getUpdates, 1000);
 
 var mostRecentUpdate = 0;
+
 function getUpdates(){
     axios.get(GET_UPDATE_URL, {
         params: {
@@ -73,7 +60,6 @@ function getUpdates(){
 
                         var num = match[1];
                         console.log('match: ' + match[1]);
-                        matches.push(parseFloat(num));
                         matches.push(key);
                         break;
                     }
@@ -82,40 +68,16 @@ function getUpdates(){
                 if (matches.length == 0){
                     console.log("No match found for " + text);
                 }
-                else{
-                    var units = matches[matches.length-1];
-                    var num = matches[0];
-                    console.log(matches);
-                    var timeToWait = num*time_units[units];
-                    console.log("TTW: " + timeToWait);
 
-                    setTimeout(function(){
-                        forwardMessage(currentUpdate.message.from.id, currentUpdate.message.chat.id, currentUpdate.message.message_id)
+                var timeToWait = matches[1]*time_units[matches[matches.length-1]];
+                setTimeout(function(){
+                    forwardMessage(currentUpdate.message.from.id, currentUpdate.message.chat.id, currentUpdate.message.message_id)
                     }, timeToWait);
-
-                    confirmReminderSet(currentUpdate.message.chat.id, currentUpdate.message.message_id, num, units);
-                }
             }
         }
     }).catch(function (error){
         console.log(error);
     });
-}
-
-function confirmReminderSet(chat_id, reply_to_message_id, numberOfUnits, units){
-    axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
-            chat_id: chat_id,
-            text: 'Reminder set for ' + numberOfUnits + ' ' + units + 's' + ' from now.',
-            reply_to_message: reply_to_message_id
-    })
-    .then(response => {
-        // We get here if the message was successfully posted
-        console.log('Message posted')
-    })
-    .catch(err => {
-        // ...and here if it was not
-        console.log('Error :', err)
-    })
 }
 
 function getMaxInObjectArray(arrayOfObjects, maxField){
@@ -127,6 +89,19 @@ function getMaxInObjectArray(arrayOfObjects, maxField){
 
     return max;
 }
+
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({
+    extended: true
+})); // for parsing application/x-www-form-urlencoded
+
+
+log4js.configure({
+	appenders: { normal: { type: 'file', filename: 'live.log' } },
+    categories: { default: { appenders: ['normal'], level: 'debug' }}
+});
+
+var logger = log4js.getLogger('normal');
 
 //Function called to forward message, usually set on a timer.
 function forwardMessage(chat_id, from_chat_id, message_id){
@@ -146,5 +121,71 @@ function forwardMessage(chat_id, from_chat_id, message_id){
             console.log('Error :', err)
         });
 }
+
+app.get('/', function(req, res){
+    console.log('pp');
+});
+
+//This is the route the API will call
+app.post('/', function(req, res) {
+    console.log('got-eem');
+    console.log(req.body);
+    const {message} = req.body
+
+    var match = null;
+
+    if (!message) {
+        console.log("No message!");
+        return res.end()
+    }
+    else{
+        var matched = false;
+
+        console.log(message.text);
+
+        for (var key in time_units){
+            console.log("key: " + key);
+            var regex = new RegExp("(\\d{1,10}.?\\d{0,10}) " + key);
+            if ((match = regex.exec(message.text)) != null){
+                //Means valid number has been matched
+
+                var num = match[1];
+                console.log('match: ' + match[1]);
+                match.push(key);
+            }
+        }
+
+        if (!match){
+            console.log("No match found!");
+            return res.end();
+        }
+    }
+
+    console.log("Continuing...");
+    var timeToWait = match[1]*time_units[match[match.length-1]];
+
+    setTimeout(forwardMessage(message.from.id, message.chat.id, message.id), timeToWait);
+    // Respond by hitting the telegram bot API and responding to message.
+    axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+        chat_id: message.chat.id,
+        text: 'Reminder set for ' + match[1] + ' ' + match[match.length - 1] + 's' + 'from now.',
+        reply_to_message: message
+    })
+        .then(response => {
+            // We get here if the message was successfully posted
+            console.log('Message posted')
+            res.end('ok')
+        })
+        .catch(err => {
+            // ...and here if it was not
+            console.log('Error :', err)
+            res.end('Error :' + err)
+        })
+});
+
+// Finally, start our server
+//app.listen(80, function() {
+//    console.log('Telegram app listening on port 443!');
+//});
 
 //https.createServer(SSL_OPTIONS, app).listen(443);
