@@ -46,18 +46,22 @@ setTimeout(getUpdates, 1000);
 
 var mostRecentUpdate = 0;
 function getUpdates(){
+    console.log("Getting Updates...");
     axios.get(GET_UPDATE_URL, {
         params: {
             offset: mostRecentUpdate
         }
     }).then(function(response){
+        console.log("Updates recieved.");
+
         var result = response.data.result;
+        console.log(result);
         mostRecentUpdate = getMaxInObjectArray(result, 'update_id');
 
         for (var update in result){
             var currentUpdate = result[update];
 
-            console.log(currentUpdate);
+            console.log(JSON.stringify(currentUpdate));
             if (!currentUpdate.message) {
                 console.log("No message!");
             }

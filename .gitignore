@@ -1,3 +1,6 @@
 node_modules
 webpage_directory
 apache_config_file.conf
+telegram_private.key
+telegram_public.pem
+backup.js
