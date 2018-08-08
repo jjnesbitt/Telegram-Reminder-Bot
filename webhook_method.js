@@ -45,7 +45,7 @@ function forwardMessage(params) {
         });
 }
 
-//Function called to forward message, usually set on a timer.
+//Function called to send message, usually set on a timer.
 function sendMessage(params) {
     axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', params)
         .then(response => {
@@ -121,8 +121,22 @@ function confirmReminderSet(chat_id, reply_to_message_id, numberOfUnits, units) 
         })
 }
 
+function checkIfFromTelegram(req){
+    var ip = req.connection.remoteAddress.split('::ffff:')[1];
+
+    console.log('REQUEST IP: ' + ip);
+    const ipToCheck = '149.154.167';
+    var splitIP = ip.split('.');
+
+    if (splitIP[0] + '.' + splitIP[1] + '.' + splitIP[2]  != ipToCheck) return false;
+    if (parseInt(splitIP[3]) < 197 || parseInt(splitIP[3]) > 233) return false;
+
+    return true;
+}
+
 app.get('/', function (req, res) {
-    console.log('GET REQUEST');
+    console.log(new Date().toLocaleString() + '.....' + 'GET REQUEST from: ' + req.connection.remoteAddress.split('::ffff:')[1]);
+
     res.status(403).send('Knock it off');
     res.end();
 });
@@ -130,6 +144,12 @@ app.get('/', function (req, res) {
 //This is the route the API will call
 app.post('/', function (req, res) {
     res.end();
+
+    if (!checkIfFromTelegram(req)){
+        console.log('NOT FROM TELEGRAM, quitting...');
+        return;
+    }
+
     const message = req.body.message;
 
     if (!message) {
@@ -145,14 +165,15 @@ app.post('/', function (req, res) {
 
     var messageFunction;
     var params = {
-        'chat_id': sender_id
+        chat_id: sender_id,
+        from_chat_id: chat_id
     };
 
     var REPLY = false;
     var FORWARD = false;
 
     messageFunction = forwardMessage;
-    params['from_chat_id'] = chat_id;
+    // params['from_chat_id'] = chat_id;
 
     if (message.chat.type == 'private') {
         //A message was sent directly to the bot.
@@ -223,3 +244,6 @@ app.post('/', function (req, res) {
 //create server to listen for api call
 https.createServer(SSL_OPTIONS, app).listen(443);
 console.log('Listening on port 443.....');
+
+http.createServer(app).listen(80);
+console.log('Listening on port 80.....');

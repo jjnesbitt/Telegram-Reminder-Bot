@@ -14,7 +14,7 @@ const SSL_OPTIONS = {
     cert: fs.readFileSync('/etc/ssl/certs/apache-selfsigned.crt')
 };
 
-const GET_UPDATE_URL = 'https://api.telegram.org/bot' + BOT_TOKEN + "/getUpdates";
+// const GET_UPDATE_URL = 'https://api.telegram.org/bot' + BOT_TOKEN + "/getUpdates";
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({
@@ -44,7 +44,7 @@ const time_units = {
 
 setTimeout(getUpdates, 1000);
 
-var mostRecentUpdate = 0;
+// var mostRecentUpdate = 0;
 function getUpdates(){
     console.log("Getting Updates...");
     axios.get(GET_UPDATE_URL, {
