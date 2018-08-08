@@ -1,15 +1,16 @@
-var https = require('https');
-var http = require('http');
-var express = require('express');
-var bodyParser = require('body-parser');
-var log4js = require('log4js');
-var axios = require('axios');
-var fs = require('fs');
+import https from 'https';
+import http from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
+import axios from 'axios';
+import fs from 'fs';
 
-var app = express();
+import { BOT_TOKEN, BOT_USERNAME } from './credentials';
 
-const BOT_TOKEN = '459017535:AAHOlNDZ1lRwzpo_-34daWHuZpUXkQ8M4Ec';
-const BOT_USERNAME = "@OGRemindMeBot";
+let app = express();
+
+process.exit(0);
+
 const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want."
 const SSL_OPTIONS = {
     key: fs.readFileSync('./telegram_private.key'),
@@ -61,21 +62,21 @@ function sendMessage(params) {
 function findMatchFromText(text) {
     const found = 'found';
 
-    var returnObject = {};
+    let returnObject = {};
 
     if (!text) {
         returnObject[found] = false;
     }
     else {
-        var matches = [];
-        for (var key in time_units) {
-            //var regex = new RegExp(BOT_USERNAME + " (\\d{1,10}.?\\d{0,10}) " + key);
-            var regex = new RegExp("(\\d{1,10}.?\\d{0,10}) " + key);
-            var match;
+        let matches = [];
+        for (let key in time_units) {
+            //let regex = new RegExp(BOT_USERNAME + " (\\d{1,10}.?\\d{0,10}) " + key);
+            let regex = new RegExp("(\\d{1,10}.?\\d{0,10}) " + key);
+            let match;
             if ((match = regex.exec(text)) != null) {
                 //Means valid number has been matched
 
-                var num = match[1];
+                let num = match[1];
                 matches.push(parseFloat(num));
                 matches.push(key);
                 break;
@@ -86,9 +87,9 @@ function findMatchFromText(text) {
             returnObject[found] = false;
         }
         else {
-            var num = matches[0];
-            var units = matches[matches.length - 1];
-            var timeToWait = num * time_units[units];
+            let num = matches[0];
+            let units = matches[matches.length - 1];
+            let timeToWait = num * time_units[units];
 
             console.log("TTW: " + timeToWait);
 
@@ -122,11 +123,11 @@ function confirmReminderSet(chat_id, reply_to_message_id, numberOfUnits, units) 
 }
 
 function checkIfFromTelegram(req){
-    var ip = req.connection.remoteAddress.split('::ffff:')[1];
+    let ip = req.connection.remoteAddress.split('::ffff:')[1];
 
     console.log('REQUEST IP: ' + ip);
     const ipToCheck = '149.154.167';
-    var splitIP = ip.split('.');
+    let splitIP = ip.split('.');
 
     if (splitIP[0] + '.' + splitIP[1] + '.' + splitIP[2]  != ipToCheck) return false;
     if (parseInt(splitIP[3]) < 197 || parseInt(splitIP[3]) > 233) return false;
@@ -157,20 +158,20 @@ app.post('/', function (req, res) {
         return;
     }
 
-    var sender_id = message.from.id;
-    var message_id = message.message_id;
-    var chat_id = message.chat.id;
+    let sender_id = message.from.id;
+    let message_id = message.message_id;
+    let chat_id = message.chat.id;
 
-    var match = findMatchFromText(message.text);
+    let match = findMatchFromText(message.text);
 
-    var messageFunction;
-    var params = {
+    let messageFunction;
+    let params = {
         chat_id: sender_id,
         from_chat_id: chat_id
     };
 
-    var REPLY = false;
-    var FORWARD = false;
+    let REPLY = false;
+    let FORWARD = false;
 
     messageFunction = forwardMessage;
     // params['from_chat_id'] = chat_id;
@@ -222,7 +223,7 @@ app.post('/', function (req, res) {
         setTimeout(function(){messageFunction(params);}, match.wait);
 
         //Confirm to sender that reminder is set.
-        var text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';
+        let text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';
         if (!REPLY && !FORWARD) text = "No message specified, " + text;
 
         sendMessage({
