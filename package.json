@@ -4,7 +4,7 @@
   "description": "Telegram bot for reminders",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js --exec 'babel-node index.js && yarn test'",
+    "start": "nodemon index.js --exec 'yarn test && babel-node'",
     "test": "eslint index.js"
   },
   "author": "Jake <jjnesbitt2@gmail.com>",

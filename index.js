@@ -1,9 +1,9 @@
 import https from 'https';
-import http from 'http';
+// import http from 'http';
 import express from 'express';
 import bodyParser from 'body-parser';
 import axios from 'axios';
-import fs from 'fs';
+// import fs from 'fs';
 import _ from 'lodash';
 
 import { BOT_TOKEN, BOT_USERNAME } from './credentials';
@@ -11,10 +11,10 @@ import { BOT_TOKEN, BOT_USERNAME } from './credentials';
 const app = express();
 
 const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want.";
-const SSL_OPTIONS = {
-    key: fs.readFileSync('./telegram_private.key'),
-    cert: fs.readFileSync('./telegram_public.pem'),
-};
+// const SSL_OPTIONS = {
+//     key: fs.readFileSync('./telegram_private.key'),
+//     cert: fs.readFileSync('./telegram_public.pem'),
+// };
 
 //In milliseconds
 const time_units = {
@@ -201,13 +201,14 @@ app.post('/', (req, res) => {
     return;
 });
 
-process.exit(0);
-
 // Must fix networking with nginx past here
 
-//create server to listen for api call
-https.createServer(SSL_OPTIONS, app).listen(443);
+// //create server to listen for api call  
+// https.createServer(SSL_OPTIONS, app).listen(8081);
+// console.log('Listening on port 443.....');
+
+https.createServer(app).listen(8081);
 console.log('Listening on port 443.....');
 
-http.createServer(app).listen(80);
-console.log('Listening on port 80.....');
+//http.createServer(app).listen(8080);
+//console.log('Listening on port 80.....');
