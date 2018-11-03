@@ -1,5 +1,5 @@
-import https from 'https';
-// import http from 'http';
+// import https from 'https';
+import http from 'http';
 import express from 'express';
 import bodyParser from 'body-parser';
 import axios from 'axios';
@@ -8,9 +8,12 @@ import _ from 'lodash';
 
 import { BOT_TOKEN, BOT_USERNAME } from './credentials';
 
+const REAL_IP_HEADER = 'x-real-ip';
+
 const app = express();
 
-const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want.";
+const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want. \
+Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc.).";
 // const SSL_OPTIONS = {
 //     key: fs.readFileSync('./telegram_private.key'),
 //     cert: fs.readFileSync('./telegram_public.pem'),
@@ -61,10 +64,13 @@ function sendMessage(params) {
 }
 
 function findMatchFromText(text) {
+    // const COMMAND_REGEX = /(\/[^/\s]+\s*)(.+)?/;
+    // const matched = COMMAND_REGEX.exec(raw_text);
+
     const regex = new RegExp(`(\\d{1,10}(?:\\.\\d{0,10})?) (${_.keys(time_units).join('|')})`);
     const match = regex.exec(text);
 
-    if (!text || !match.length) return { found: false };
+    if (!text || !match || !match.length) return { found: false };
 
     const num = parseFloat(match[1]);
     const unit = match[2];
@@ -82,11 +88,9 @@ function findMatchFromText(text) {
 
 function checkIfFromTelegram(req) {
     const ipToCheck = '149.154.167';
-
-    // const ip = req.connection.remoteAddress.split('::ffff:')[1];
-    // const ipArray = ip.split('.');
-    const ipArray = req.connection.remoteAddress.split('::ffff:')[1].split('.');
-
+    
+    // const ipArray = req.connection.remoteAddress.split('::ffff:')[1].split('.');
+    const ipArray = req.headers[REAL_IP_HEADER].split('.');
     console.log('REQUEST IP: ' + ipArray.join('.'));
 
     // if (ipArray[0] + '.' + ipArray[1] + '.' + ipArray[2] != ipToCheck) return false;
@@ -97,7 +101,7 @@ function checkIfFromTelegram(req) {
 }
 
 app.get('/', function (req, res) {
-    console.log(new Date().toLocaleString() + '.....' + 'GET REQUEST from: ' + req.connection.remoteAddress.split('::ffff:')[1]);
+    console.log(new Date().toLocaleString() + '.....' + 'GET REQUEST from: ' + req.headers[REAL_IP_HEADER]);
 
     res.status(403).send('Knock it off');
     res.end();
@@ -172,6 +176,7 @@ app.post('/', (req, res) => {
         }
         else {
             //Bot not mentioned, ignore
+            console.log("Bot not mentioned, let's not get this bread.");
             return;
         }
     }
@@ -207,8 +212,8 @@ app.post('/', (req, res) => {
 // https.createServer(SSL_OPTIONS, app).listen(8081);
 // console.log('Listening on port 443.....');
 
-https.createServer(app).listen(8081);
-console.log('Listening on port 443.....');
+// https.createServer(app).listen(8081);
+// console.log('Listening on port 443.....');
 
-//http.createServer(app).listen(8080);
-//console.log('Listening on port 80.....');
+http.createServer(app).listen(8081);
+console.log('Listening on port 443.....');
