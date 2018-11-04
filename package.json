@@ -4,9 +4,13 @@
   "description": "Telegram bot for reminders",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js --exec 'yarn test && babel-node'",
+    "start": "nodemon src/index.js --exec 'yarn test && babel-node'",
     "build": "yarn babel src/ --out-dir bin/ --copy-files",
-    "test": "eslint index.js"
+    "up": "pm2 start bin/index.js -n telegram-bot --log-date-format 'YYYY-MM-DD HH:mm:ss Z'",
+    "down": "pm2 delete telegram-bot",
+    "restart": "yarn down; yarn up",
+    "reload": "yarn build && yarn restart",
+    "test": "eslint src/index.js"
   },
   "author": "Jake <jjnesbitt2@gmail.com>",
   "license": "ISC",

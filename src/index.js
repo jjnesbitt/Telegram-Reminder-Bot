@@ -8,18 +8,7 @@ import _ from 'lodash';
 
 import { BOT_TOKEN, BOT_USERNAME } from './credentials';
 
-const REAL_IP_HEADER = 'x-real-ip';
-
-const app = express();
-
-const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want. \
-Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc.).";
-// const SSL_OPTIONS = {
-//     key: fs.readFileSync('./telegram_private.key'),
-//     cert: fs.readFileSync('./telegram_public.pem'),
-// };
-
-//In milliseconds
+// In milliseconds
 const time_units = {
     second: 1000,
     minute: 60000,
@@ -30,13 +19,31 @@ const time_units = {
     year: 29030400000,
 };
 
+const REAL_IP_HEADER = 'x-real-ip';
+const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want. \
+Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc.).";
 
+// Keywords to invoke the bot
+const KEYWORDS = ['!remindme', BOT_USERNAME];
+
+// Users that have forwarded messages to the bot, but havent sent a time yet
+// const USER_WAITING_LIST = [];
+
+// How long to wait for the user to send a time after a forwarded message
+// const USER_WAIT_TIMEOUT = time_units.minute * 5;
+
+// How long to wait for the actual message, if the user sends a time but no message
+// const FORWARD_MESSAGE_SEPARATION_TIMEOUT = time_units.second * 5;
+
+// ------------------------------------------------------
+
+const app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({
     extended: true,
 })); // for parsing application/x-www-form-urlencoded
 
-//Function called to forward message, usually set on a timer.
+// Function called to forward message, usually set on a timer.
 
 const forwardMessage = params => {
     axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/forwardMessage', params)
@@ -91,7 +98,7 @@ function checkIfFromTelegram(req) {
 
     // const ipArray = req.connection.remoteAddress.split('::ffff:')[1].split('.');
     const ipArray = req.headers[REAL_IP_HEADER].split('.');
-    console.log('REQUEST IP: ' + ipArray.join('.'));
+    // console.log('REQUEST IP: ' + ipArray.join('.'));
 
     // if (ipArray[0] + '.' + ipArray[1] + '.' + ipArray[2] != ipToCheck) return false;
     if (_.dropRight(ipArray).join('.') != ipToCheck) return false;
@@ -134,48 +141,31 @@ app.post('/', (req, res) => {
         from_chat_id: chat_id,
     };
 
-    let REPLY = false;
-    let FORWARD = false;
+    const REPLY = message.reply_to_message ? true : false;
+    const FORWARD = message.forward_from_message_id ? true : false;
+    const PRIVATE = message.chat.type === 'private' ? true : false;
+    // let WAITING = false;
 
-    // params['from_chat_id'] = chat_id;
+    if (REPLY) params.message_id = message.reply_to_message.message_id;
+    else if (FORWARD) params.message_id = message.forward_from_message_id;
+    else params.message_id = message_id;
 
-    if (message.chat.type == 'private') {
+    if (PRIVATE) {
         //A message was sent directly to the bot.
-        //Will forward message back to user
-
         console.log('private chat');
 
-        if (message.forward_from_message_id) {
-            //Contains a forwarded message
-            FORWARD = true;
-            params.message_id = message.forward_from_message_id;
-        }
-        else if (message.reply_to_message) {
-            //Is a reply to a message
-            REPLY = true;
-            params.message_id = message.reply_to_message.message_id;
-        }
-        else {
-            params.message_id = message_id;
-        }
+        // if (USER_WAITING_LIST.includes(sender_id)) {
+
+        // }
     }
     else {
         //Public, bot must be mentioned
         console.log('public chat');
-        if (RegExp(BOT_USERNAME).test(message.text)) {
-            //Bot mentioned in a group, continue...
 
-            if (message.reply_to_message) {
-                //Message is a reply to another message
-                REPLY = true;
-                params.message_id = message.reply_to_message.message_id;
-            }
-            else {
-                params.message_id = message_id;
-            }
-        }
-        else {
-            //Bot not mentioned, ignore
+        // if (RegExp(BOT_USERNAME).test(message.text)) {
+        if (!_.some(KEYWORDS, x => _.toLower(message.text).includes(_.toLower(x)))) {
+            // Bot not mentioned, ignore
+
             console.log("Bot not mentioned, let's not get this bread.");
             return;
         }
@@ -188,7 +178,7 @@ app.post('/', (req, res) => {
 
         //Confirm to sender that reminder is set.
         let text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';
-        if (!REPLY && !FORWARD) text = "No message specified, " + text;
+        if (!REPLY && !FORWARD) text = `No message specified. ${text}`;
 
         sendMessage({
             chat_id,
@@ -203,7 +193,6 @@ app.post('/', (req, res) => {
             text: MATCH_NOT_FOUND_TEXT,
         });
     }
-    return;
 });
 
 http.createServer(app).listen(8081);
