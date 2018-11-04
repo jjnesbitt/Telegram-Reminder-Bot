@@ -88,7 +88,7 @@ function findMatchFromText(text) {
 
 function checkIfFromTelegram(req) {
     const ipToCheck = '149.154.167';
-    
+
     // const ipArray = req.connection.remoteAddress.split('::ffff:')[1].split('.');
     const ipArray = req.headers[REAL_IP_HEADER].split('.');
     console.log('REQUEST IP: ' + ipArray.join('.'));
@@ -205,15 +205,6 @@ app.post('/', (req, res) => {
     }
     return;
 });
-
-// Must fix networking with nginx past here
-
-// //create server to listen for api call  
-// https.createServer(SSL_OPTIONS, app).listen(8081);
-// console.log('Listening on port 443.....');
-
-// https.createServer(app).listen(8081);
-// console.log('Listening on port 443.....');
 
 http.createServer(app).listen(8081);
 console.log('Listening on port 443.....');

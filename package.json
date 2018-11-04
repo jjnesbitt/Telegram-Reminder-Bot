@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js --exec 'yarn test && babel-node'",
+    "build": "yarn babel src/ --out-dir bin/ --copy-files",
     "test": "eslint index.js"
   },
   "author": "Jake <jjnesbitt2@gmail.com>",
