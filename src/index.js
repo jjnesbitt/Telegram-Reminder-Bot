@@ -27,13 +27,13 @@ Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc
 const KEYWORDS = ['!remindme', BOT_USERNAME];
 
 // Users that have forwarded messages to the bot, but havent sent a time yet
-// const USER_WAITING_LIST = [];
+const USER_WAITING_LIST = [];
 
 // How long to wait for the user to send a time after a forwarded message
-// const USER_WAIT_TIMEOUT = time_units.minute * 5;
+const USER_WAIT_TIMEOUT = time_units.minute * 5;
 
 // How long to wait for the actual message, if the user sends a time but no message
-// const FORWARD_MESSAGE_SEPARATION_TIMEOUT = time_units.second * 5;
+const FORWARD_MESSAGE_SEPARATION_TIMEOUT = time_units.second * 5;
 
 // ------------------------------------------------------
 
@@ -57,7 +57,7 @@ const forwardMessage = params => {
         });
 };
 
-//Function called to send message, usually set on a timer.
+// Function called to send message, usually set on a timer.
 function sendMessage(params) {
     axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', params)
         .then(() => {
@@ -90,6 +90,7 @@ function findMatchFromText(text) {
         num,
         found: true,
         units: num === 1 ? unit : `${unit}s`,
+        short: match ? text === match[0] : undefined,
     };
 }
 
@@ -114,7 +115,7 @@ app.get('/', function (req, res) {
     res.end();
 });
 
-//This is the route the API will call
+// This is the route the API will call
 app.post('/', (req, res) => {
     res.end();
 
@@ -124,42 +125,54 @@ app.post('/', (req, res) => {
     }
 
     const message = req.body.message;
-
     if (!message) {
         console.log("No message!");
         return;
     }
 
+    // Message information --------------
     const sender_id = message.from.id;
     const message_id = message.message_id;
     const chat_id = message.chat.id;
 
     const match = findMatchFromText(message.text);
 
+    const REPLY = message.reply_to_message ? true : false;
+    const FORWARD = message.forward_from_message_id ? true : false;
+    const PRIVATE = message.chat.type === 'private' ? true : false;
+    const SHOULD_WAIT = (PRIVATE && match.short) ? true : false;
+    // ----------------------------------
+
     const params = {
         chat_id: sender_id,
         from_chat_id: chat_id,
     };
-
-    const REPLY = message.reply_to_message ? true : false;
-    const FORWARD = message.forward_from_message_id ? true : false;
-    const PRIVATE = message.chat.type === 'private' ? true : false;
-    // let WAITING = false;
 
     if (REPLY) params.message_id = message.reply_to_message.message_id;
     else if (FORWARD) params.message_id = message.forward_from_message_id;
     else params.message_id = message_id;
 
     if (PRIVATE) {
-        //A message was sent directly to the bot.
+        // A message was sent directly to the bot.
         console.log('private chat');
 
-        // if (USER_WAITING_LIST.includes(sender_id)) {
+        if (SHOULD_WAIT){
+            console.log('START WAITING');
 
-        // }
+            // USER_WAITING_LIST.push({
+            //     message,
+            //     match,
+            // });
+        }
+        // else if (USER_WAITING_LIST.includes(sender_id)) {
+        else if (_.some(USER_WAITING_LIST, x => x.message.from.id === sender_id)) {
+            // Message from someone we're waiting for
+
+            
+        }
     }
     else {
-        //Public, bot must be mentioned
+        // Public, bot must be mentioned
         console.log('public chat');
 
         // if (RegExp(BOT_USERNAME).test(message.text)) {
@@ -171,12 +184,12 @@ app.post('/', (req, res) => {
         }
     }
 
-    //We've gotten here, which means that the bot either had a message sent directly to it, or it has been mentioned publicly
+    // We've gotten here, which means that the bot either had a message sent directly to it, or it has been mentioned publicly
     if (match.found) {
-        //Either forward or send message
+        // Either forward or send message
         setTimeout(() => { forwardMessage(params); }, match.wait);
 
-        //Confirm to sender that reminder is set.
+        // Confirm to sender that reminder is set.
         let text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';
         if (!REPLY && !FORWARD) text = `No message specified. ${text}`;
 
