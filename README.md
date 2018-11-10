@@ -9,3 +9,6 @@ This is a bot for telegram that will remind users of things, by forwarding messa
 Keywords that can invoke the bot are: @OGRemindMeBot, !remindme (Capitilization doesn't matter)
 
 Wait times can be of the format <number> <seconds, minutes, hours, days, weeks, months, years>
+
+### Currently Available Commands
+- /cancel -> Cancels all pending reminders for a user
