@@ -29,24 +29,27 @@ export const KEYWORDS = ['!remindme', BOT_USERNAME];
 
 // How long to wait for the actual message, if the user sends a time but no message
 // This should only happen when adding text to a forward, so should be pretty quick after.
-export const MESSAGE_WAIT_TIMEOUT = 10*time_units.second;
+export const MESSAGE_WAIT_TIMEOUT = 10 * time_units.second;
 
 // To preserve real ip address after reverse proxy
 export const REAL_IP_HEADER = 'x-real-ip';
 
 export const cancelReminders = sender_id => {
     const timeouts = currentReminders[sender_id];
-    if (timeouts!== undefined){
+    if (timeouts !== undefined) {
         timeouts.forEach(val => clearTimeout(val));
         delete currentReminders[sender_id];
     }
 };
 
 export const updateReminders = (sender_id, timeout_id) => {
-    currentReminders[sender_id] = [
-        ...currentReminders[sender_id],
-        timeout_id,
-    ];
+    if (currentReminders[sender_id] !== undefined) {
+        currentReminders[sender_id] = [
+            ...currentReminders[sender_id],
+            timeout_id,
+        ];
+    }
+    else currentReminders[sender_id] = [timeout_id];
 };
 
 export const forwardMessage = params => {
@@ -106,7 +109,7 @@ export const checkCommands = message => {
 
     const command = match[1];
     if (command == 'start') return true;
-    else if (command == 'cancel'){
+    else if (command == 'cancel') {
         cancelReminders(message.from.id);
         sendMessage({
             chat_id: message.chat.id,
@@ -115,9 +118,9 @@ export const checkCommands = message => {
         });
         return true;
     }
-    else if (command == 'reminders'){
+    else if (command == 'reminders') {
         console.log("current reminders", currentReminders[message.from.id]);
-        
+
         // finish later
 
         // sendMessage({
