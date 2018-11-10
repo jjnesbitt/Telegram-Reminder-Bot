@@ -22,6 +22,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // Users that have forwarded messages to the bot, but havent sent a time yet, or visa versa
 var USERS_WAITING = {};
+
 // ------------------------------------------------------
 
 // import https from 'https';
@@ -70,6 +71,9 @@ app.post('/', function (req, res) {
         from_chat_id: chat_id
     };
 
+    // Check if it's a command, and handle
+    if ((0, _resources.checkCommands)(message)) return;
+
     if (REPLY) params.message_id = message.reply_to_message.message_id;else if (FORWARD) params.message_id = message.forward_from_message_id;else params.message_id = message_id;
 
     var SHOULD_WAIT = match.found && !REPLY && !FORWARD;
@@ -116,9 +120,9 @@ app.post('/', function (req, res) {
     // We've gotten here, which means that the bot either had a message sent directly to it, or it has been mentioned publicly
     if (!SHOULD_WAIT) {
         if (match.found) {
-            setTimeout(function () {
+            (0, _resources.updateReminders)(sender_id, setTimeout(function () {
                 (0, _resources.forwardMessage)(params);
-            }, match.wait);
+            }, match.wait));
 
             // Confirm to sender that reminder is set.
             var text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';

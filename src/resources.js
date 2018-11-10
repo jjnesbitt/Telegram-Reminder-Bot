@@ -14,10 +14,15 @@ export const time_units = {
     year: 29030400000,
 };
 
+// Object that stores the timout ID's for forwarding messages, by user id
+const currentReminders = {};
+
 export const MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want. \
 Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc.).";
 
 export const MESSAGE_INCOMPLETE_TEXT = "Time not followed by a valid message. Exiting...";
+
+export const REMINDERS_CLEARED_TEXT = "Reminders cleared.";
 
 // Keywords to invoke the bot
 export const KEYWORDS = ['!remindme', BOT_USERNAME];
@@ -28,6 +33,21 @@ export const MESSAGE_WAIT_TIMEOUT = 10*time_units.second;
 
 // To preserve real ip address after reverse proxy
 export const REAL_IP_HEADER = 'x-real-ip';
+
+export const cancelReminders = sender_id => {
+    const timeouts = currentReminders[sender_id];
+    if (timeouts!== undefined){
+        timeouts.forEach(val => clearTimeout(val));
+        delete currentReminders[sender_id];
+    }
+};
+
+export const updateReminders = (sender_id, timeout_id) => {
+    currentReminders[sender_id] = [
+        ...currentReminders[sender_id],
+        timeout_id,
+    ];
+};
 
 export const forwardMessage = params => {
     axios.post('https://api.telegram.org/bot' + BOT_TOKEN + '/forwardMessage', params)
@@ -75,6 +95,43 @@ export const findMatchFromText = text => {
         found: true,
         units: num === 1 ? unit : `${unit}s`,
     };
+};
+
+export const checkCommands = message => {
+    const matchCommandRegex = /^\/(\w+)/;
+    const match = matchCommandRegex.exec(message.text);
+
+    console.log(match);
+    if (!match) return false;
+
+    const command = match[1];
+    if (command == 'start') return true;
+    else if (command == 'cancel'){
+        cancelReminders(message.from.id);
+        sendMessage({
+            chat_id: message.chat.id,
+            reply_to_message_id: message.message_id,
+            text: REMINDERS_CLEARED_TEXT,
+        });
+        return true;
+    }
+    else if (command == 'reminders'){
+        console.log("current reminders", currentReminders[message.from.id]);
+        
+        // finish later
+
+        // sendMessage({
+        //     chat_id: message.chat.id,
+        //     reply_to_message_id: message.message_id,
+        //     text: REMINDERS_CLEARED_TEXT,
+        // });
+
+        // return false for now cuz this command isn't implemented yet.
+        // return true;
+        return false;
+    }
+
+    return false;
 };
 
 export const checkIfFromTelegram = req => {

@@ -5,10 +5,12 @@ import bodyParser from 'body-parser';
 import _ from 'lodash';
 
 import {
-    forwardMessage, 
-    sendMessage, 
-    findMatchFromText, 
-    checkIfFromTelegram, 
+    forwardMessage,
+    sendMessage,
+    findMatchFromText,
+    checkIfFromTelegram,
+    updateReminders,
+    checkCommands,
     REAL_IP_HEADER,
     KEYWORDS,
     MATCH_NOT_FOUND_TEXT,
@@ -18,6 +20,7 @@ import {
 
 // Users that have forwarded messages to the bot, but havent sent a time yet, or visa versa
 const USERS_WAITING = {};
+
 // ------------------------------------------------------
 
 const app = express();
@@ -65,6 +68,9 @@ app.post('/', (req, res) => {
         from_chat_id: chat_id,
     };
 
+    // Check if it's a command, and handle
+    if (checkCommands(message)) return;
+
     if (REPLY) params.message_id = message.reply_to_message.message_id;
     else if (FORWARD) params.message_id = message.forward_from_message_id;
     else params.message_id = message_id;
@@ -87,15 +93,15 @@ app.post('/', (req, res) => {
 
             USERS_WAITING[sender_id] = match;
             setTimeout((params) => {
-                if (USERS_WAITING[params.sender_id]){
+                if (USERS_WAITING[params.sender_id]) {
                     sendMessage({
                         chat_id: params.chat_id,
                         reply_to_message_id: params.message_id,
                         text: MESSAGE_INCOMPLETE_TEXT,
                     });
                 }
-                delete USERS_WAITING[params.sender_id];   
-            }, MESSAGE_WAIT_TIMEOUT, {sender_id, message_id, chat_id});
+                delete USERS_WAITING[params.sender_id];
+            }, MESSAGE_WAIT_TIMEOUT, { sender_id, message_id, chat_id });
         }
     }
     else {
@@ -113,7 +119,7 @@ app.post('/', (req, res) => {
     // We've gotten here, which means that the bot either had a message sent directly to it, or it has been mentioned publicly
     if (!SHOULD_WAIT) {
         if (match.found) {
-            setTimeout(() => { forwardMessage(params); }, match.wait);
+            updateReminders(sender_id, setTimeout(() => { forwardMessage(params); }, match.wait));
 
             // Confirm to sender that reminder is set.
             let text = 'Reminder set for ' + match.num + ' ' + match.units + ' from now.';

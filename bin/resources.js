@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.checkIfFromTelegram = exports.findMatchFromText = exports.sendMessage = exports.forwardMessage = exports.REAL_IP_HEADER = exports.MESSAGE_WAIT_TIMEOUT = exports.KEYWORDS = exports.MESSAGE_INCOMPLETE_TEXT = exports.MATCH_NOT_FOUND_TEXT = exports.time_units = undefined;
+exports.checkIfFromTelegram = exports.checkCommands = exports.findMatchFromText = exports.sendMessage = exports.forwardMessage = exports.updateReminders = exports.cancelReminders = exports.REAL_IP_HEADER = exports.MESSAGE_WAIT_TIMEOUT = exports.KEYWORDS = exports.REMINDERS_CLEARED_TEXT = exports.MESSAGE_INCOMPLETE_TEXT = exports.MATCH_NOT_FOUND_TEXT = exports.time_units = undefined;
 
 var _axios = require('axios');
 
@@ -17,6 +17,8 @@ var _credentials = require('./credentials');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 // Exports -------------------
 
 var time_units = exports.time_units = {
@@ -29,10 +31,15 @@ var time_units = exports.time_units = {
     year: 29030400000
 };
 
+// Object that stores the timout ID's for forwarding messages, by user id
+var currentReminders = {};
+
 var MATCH_NOT_FOUND_TEXT = exports.MATCH_NOT_FOUND_TEXT = "Sorry, I don't know what you want. \
 Please specify a length of time to remind you after (e.g. 5 Minutes, 2 Days, etc.).";
 
 var MESSAGE_INCOMPLETE_TEXT = exports.MESSAGE_INCOMPLETE_TEXT = "Time not followed by a valid message. Exiting...";
+
+var REMINDERS_CLEARED_TEXT = exports.REMINDERS_CLEARED_TEXT = "Reminders cleared.";
 
 // Keywords to invoke the bot
 var KEYWORDS = exports.KEYWORDS = ['!remindme', _credentials.BOT_USERNAME];
@@ -43,6 +50,20 @@ var MESSAGE_WAIT_TIMEOUT = exports.MESSAGE_WAIT_TIMEOUT = 10 * time_units.second
 
 // To preserve real ip address after reverse proxy
 var REAL_IP_HEADER = exports.REAL_IP_HEADER = 'x-real-ip';
+
+var cancelReminders = exports.cancelReminders = function cancelReminders(sender_id) {
+    var timeouts = currentReminders[sender_id];
+    if (timeouts !== undefined) {
+        timeouts.forEach(function (val) {
+            return clearTimeout(val);
+        });
+        delete currentReminders[sender_id];
+    }
+};
+
+var updateReminders = exports.updateReminders = function updateReminders(sender_id, timeout_id) {
+    currentReminders[sender_id] = [].concat(_toConsumableArray(currentReminders[sender_id]), [timeout_id]);
+};
 
 var forwardMessage = exports.forwardMessage = function forwardMessage(params) {
     _axios2.default.post('https://api.telegram.org/bot' + _credentials.BOT_TOKEN + '/forwardMessage', params).then(function () {
@@ -86,6 +107,41 @@ var findMatchFromText = exports.findMatchFromText = function findMatchFromText(t
         found: true,
         units: num === 1 ? unit : unit + 's'
     };
+};
+
+var checkCommands = exports.checkCommands = function checkCommands(message) {
+    var matchCommandRegex = /^\/(\w+)/;
+    var match = matchCommandRegex.exec(message.text);
+
+    console.log(match);
+    if (!match) return false;
+
+    var command = match[1];
+    if (command == 'start') return true;else if (command == 'cancel') {
+        cancelReminders(message.from.id);
+        sendMessage({
+            chat_id: message.chat.id,
+            reply_to_message_id: message.message_id,
+            text: REMINDERS_CLEARED_TEXT
+        });
+        return true;
+    } else if (command == 'reminders') {
+        console.log("current reminders", currentReminders[message.from.id]);
+
+        // finish later
+
+        // sendMessage({
+        //     chat_id: message.chat.id,
+        //     reply_to_message_id: message.message_id,
+        //     text: REMINDERS_CLEARED_TEXT,
+        // });
+
+        // return false for now cuz this command isn't implemented yet.
+        // return true;
+        return false;
+    }
+
+    return false;
 };
 
 var checkIfFromTelegram = exports.checkIfFromTelegram = function checkIfFromTelegram(req) {
