@@ -10,7 +10,7 @@
     "down": "pm2 delete telegram-bot",
     "restart": "yarn down; yarn up",
     "reload": "yarn build && yarn restart",
-    "test": "eslint src/index.js"
+    "test": "eslint src/*.js"
   },
   "author": "Jake <jjnesbitt2@gmail.com>",
   "license": "ISC",
