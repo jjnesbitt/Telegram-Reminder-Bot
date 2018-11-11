@@ -1,6 +1,4 @@
 node_modules/
 bin/
-telegram_private.key
-telegram_public.pem
 credentials.js
 scripts
