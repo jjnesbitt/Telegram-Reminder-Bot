@@ -25,7 +25,7 @@ export const MESSAGE_INCOMPLETE_TEXT = "Time not followed by a valid message. Ex
 export const REMINDERS_CLEARED_TEXT = "Reminders cleared.";
 
 // Keywords to invoke the bot
-export const KEYWORDS = ['!remindme', BOT_USERNAME];
+export const KEYWORDS = ['!remindme', '#remindme', BOT_USERNAME];
 
 // How long to wait for the actual message, if the user sends a time but no message
 // This should only happen when adding text to a forward, so should be pretty quick after.
