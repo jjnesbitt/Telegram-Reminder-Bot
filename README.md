@@ -23,12 +23,12 @@ Wait times can be of the format <number> <seconds, minutes, hours, days, weeks, 
   <img src="https://i.imgur.com/pJlWmhQ.png" alt="Public Chat">
 </p>
 
-### Forwarding the bot a message (Step 1)
+### Forwarding the bot a message
 <p align="center">
   <img src="https://i.imgur.com/S1a8w2Q.png" alt="Forward 1">
 </p>
 
-### Forwarding the bot a message (Step 2)
+### Result
 <p align="center">
   <img src="https://i.imgur.com/agHaE01.png" alt="Forward 1">
 </p>
