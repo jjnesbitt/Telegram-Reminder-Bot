@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -35,6 +36,11 @@ func main() {
 	// fmt.Printf("Listening!\n")
 	// http.ListenAndServe(":8080", nil)
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	botToken := os.Getenv("BOT_TOKEN")
 	listenPort := ":" + os.Getenv("LISTEN_PORT")
 	publicURL := os.Getenv("PUBLIC_URL")
@@ -62,4 +68,6 @@ func main() {
 
 	// s := scheduler.New(sqliteStorage)
 	setHandlers(b)
+	go b.Start()
+	println("Bot Started!")
 }
