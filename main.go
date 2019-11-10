@@ -68,6 +68,6 @@ func main() {
 
 	// s := scheduler.New(sqliteStorage)
 	setHandlers(b)
-	go b.Start()
 	println("Bot Started!")
+	b.Start()
 }
