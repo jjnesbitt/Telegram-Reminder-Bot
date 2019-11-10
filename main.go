@@ -1,23 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(405)
-		return
-	}
-	body, _ := r.GetBody()
-	fmt.Printf("<%s>", body)
-}
 
 // func setHandlers(b *tb.Bot, s *scheduler.Scheduler) {
 // 	b.Handle("/remindme", func(m *tb.Message) {
@@ -27,7 +16,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func setHandlers(b *tb.Bot) {
 	b.Handle("/remindme", func(m *tb.Message) {
-		b.Send(m.Sender, "You entered"+m.Payload)
+		b.Send(m.Sender, "You entered "+m.Payload)
 	})
 }
 
