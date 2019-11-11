@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -36,8 +34,6 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 // Handles direct forwarded requests
 func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 	return func(m *tb.Message) {
-		fmt.Println(currentLimboUsers)
-
 		if m.Sender.IsBot || (!m.Private() && m.Payload != "") {
 			return
 		}
