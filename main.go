@@ -7,10 +7,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func setHandlers(b *tb.Bot) {
-	b.Handle("/remindme", remindMeHandler(b))
-}
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {

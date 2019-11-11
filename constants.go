@@ -26,14 +26,22 @@ var unitMap = map[string]int{
 	"month":  2419200000,
 }
 
-var numKeyboardLayout = [][]string{
-	{"7", "8", "9"},
-	{"4", "5", "6"},
-	{"1", "2", "3"},
-	{"0", "=>"},
+var keyboardTimeUnitButtons = []tb.ReplyButton{
+	tb.ReplyButton{Text: "sec"},
+	tb.ReplyButton{Text: "min"},
+	tb.ReplyButton{Text: "hr"},
+	tb.ReplyButton{Text: "day"},
+	tb.ReplyButton{Text: "week"},
+	tb.ReplyButton{Text: "month"},
 }
-var replyBtn = tb.ReplyButton{Text: "🌕 Button #1"}
-var numKeyboard = [][]tb.ReplyButton{
-	[]tb.ReplyButton{replyBtn},
-	// ...
+
+var numKeyboardLayout = [][]tb.ReplyButton{
+	{tb.ReplyButton{Text: "7"}, tb.ReplyButton{Text: "8"}, tb.ReplyButton{Text: "9"}},
+	{tb.ReplyButton{Text: "4"}, tb.ReplyButton{Text: "5"}, tb.ReplyButton{Text: "6"}},
+	{tb.ReplyButton{Text: "1"}, tb.ReplyButton{Text: "2"}, tb.ReplyButton{Text: "3"}},
+	{tb.ReplyButton{Text: "0"}},
+	// append([]tb.ReplyButton{tb.ReplyButton{Text: "0"}}, keyboardTimeUnitButtons...),
+	keyboardTimeUnitButtons,
 }
+
+var numKeyboardMarkup = tb.ReplyMarkup{ReplyKeyboard: numKeyboardLayout}
