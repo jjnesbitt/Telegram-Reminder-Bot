@@ -3,29 +3,13 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-// func setHandlers(b *tb.Bot, s *scheduler.Scheduler) {
-// 	b.Handle("/remindme", func(m *tb.Message) {
-// 		b.Send(m.Sender, "You entered"+m.Payload)
-// 	})
-// }
-
 func setHandlers(b *tb.Bot) {
-	b.Handle("/remindme", func(m *tb.Message) {
-		wait, err := getWaitTime(m.Payload)
-		if m.Payload == "" || err {
-			b.Send(m.Sender, "No valid match!")
-		}
-
-		duration := time.Duration(int64(wait.seconds * int(time.Second)))
-		time.Sleep(duration)
-		b.Send(m.Sender, "You entered "+m.Payload)
-	})
+	b.Handle("/remindme", remindMeHandler)
 }
 
 func main() {
@@ -51,15 +35,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// sqliteStorage := storage.NewSqlite3Storage()
-	// if err := storage.Connect(); err != nil {
-	// 	log.Fatal("Could not connect to db", err)
-	// }
-	// if err := storage.Initialize(); err != nil {
-	// 	log.Fatal("Could not intialize database", err)
-	// }
-
-	// s := scheduler.New(sqliteStorage)
 	setHandlers(b)
 	println("Bot Started!")
 	b.Start()

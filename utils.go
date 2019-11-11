@@ -8,6 +8,10 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+func confirmReminderSet(wait *Wait, b *tb.Bot) {
+
+}
+
 func sendMessage(m *tb.Message) {
 
 }
