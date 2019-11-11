@@ -21,7 +21,7 @@ func getBotPreferences() tb.Settings {
 		deleteWebhook()
 		poller = &tb.LongPoller{Timeout: 1 * time.Second}
 	} else {
-		if !checkWebhook() {
+		if !webhookSet() {
 			setWebhook()
 		}
 	}
