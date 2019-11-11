@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -16,15 +17,18 @@ import (
 
 func setHandlers(b *tb.Bot) {
 	b.Handle("/remindme", func(m *tb.Message) {
+		wait, err := getWaitTime(m.Payload)
+		if m.Payload == "" || err {
+			b.Send(m.Sender, "No valid match!")
+		}
+
+		duration := time.Duration(int64(wait.seconds * int(time.Second)))
+		time.Sleep(duration)
 		b.Send(m.Sender, "You entered "+m.Payload)
 	})
 }
 
 func main() {
-	// http.HandleFunc("/", handler)
-	// fmt.Printf("Listening!\n")
-	// http.ListenAndServe(":8080", nil)
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
