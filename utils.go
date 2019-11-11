@@ -1,12 +1,31 @@
 package main
 
 import (
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
+
+func getBotPreferences() tb.Settings {
+	botToken := os.Getenv("BOT_TOKEN")
+	listenPort := ":" + os.Getenv("LISTEN_PORT")
+	publicURL := os.Getenv("PUBLIC_URL")
+
+	webhook := &tb.Webhook{
+		Listen:   listenPort,
+		Endpoint: &tb.WebhookEndpoint{PublicURL: publicURL},
+	}
+
+	pref := tb.Settings{
+		Token:  botToken,
+		Poller: webhook,
+	}
+
+	return pref
+}
 
 func confirmReminderSet(wait *Wait, b *tb.Bot, sender *tb.User) {
 	stringQuantity := strconv.Itoa(wait.quantity)
