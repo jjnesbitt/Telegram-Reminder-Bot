@@ -18,6 +18,7 @@ COPY .env .
 # Install dependencies
 RUN go get github.com/joho/godotenv
 RUN go get gopkg.in/tucnak/telebot.v2
+RUN go get github.com/tidwall/gjson
 
 # Build the Go app
 RUN go build -o main .
