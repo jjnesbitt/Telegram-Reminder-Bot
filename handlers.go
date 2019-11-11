@@ -22,11 +22,12 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 			b.Send(m.Sender, "No valid match!")
 			return
 		}
-		
+
 		duration := time.Duration(int64(wait.seconds * int(time.Second)))
 
 		if m.ReplyTo == nil {
 			b.Send(m.Chat, "No message to forward!")
+			return
 		}
 
 		confirmReminderSet(&wait, b, m.Sender)
