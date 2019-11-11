@@ -9,11 +9,15 @@ RUN apk update && apk upgrade && \
 WORKDIR /app
 
 # Copy files
-COPY *.go .
+COPY *.go ./
 COPY .env .
 
 # Download all dependancies. Dependencies will be cached if the go.mod and go.sum files are not changed
 # RUN go mod download
+
+# Install dependencies
+RUN go get github.com/joho/godotenv
+RUN go get gopkg.in/tucnak/telebot.v2
 
 # Build the Go app
 RUN go build -o main .
