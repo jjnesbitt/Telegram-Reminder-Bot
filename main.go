@@ -9,7 +9,7 @@ import (
 )
 
 func setHandlers(b *tb.Bot) {
-	b.Handle("/remindme", remindMeHandler)
+	b.Handle("/remindme", remindMeHandler(b))
 }
 
 func main() {
