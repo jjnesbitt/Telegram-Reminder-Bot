@@ -14,6 +14,9 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 		}
 
 		duration := time.Duration(int64(wait.seconds * int(time.Second)))
+
+		confirmReminderSet(&wait, b, m.Sender)
+
 		time.Sleep(duration)
 		b.Send(m.Sender, "You entered "+m.Payload)
 	}

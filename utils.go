@@ -8,8 +8,10 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func confirmReminderSet(wait *Wait, b *tb.Bot) {
-
+func confirmReminderSet(wait *Wait, b *tb.Bot, sender *tb.User) {
+	stringQuantity := strconv.Itoa(wait.quantity)
+	string := "Reminder set for " + stringQuantity + " " + wait.units + "s!"
+	b.Send(sender, string)
 }
 
 func sendMessage(m *tb.Message) {
