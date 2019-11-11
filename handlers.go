@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -23,16 +21,12 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 			return
 		}
 
-		duration := time.Duration(int64(wait.seconds * int(time.Second)))
-
 		if m.ReplyTo == nil {
 			b.Send(m.Chat, "No message to forward!")
 			return
 		}
 
-		confirmReminderSet(&wait, b, m.Sender)
-		// go sendMessage(duration, m.ReplyTo, b)
-		time.Sleep(duration)
-		b.Forward(m.Sender, m.ReplyTo)
+		go confirmReminderSet(&wait, b, m.Sender)
+		go forwardMessageAfterDelay(wait.duration, b, m.Sender, m.ReplyTo)
 	}
 }
