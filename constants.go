@@ -8,6 +8,8 @@ type Wait struct {
 }
 
 var timeUnits = []string{"second", "minute", "hour", "day", "week", "month"}
+
+// Maps unit names to seconds
 var unitMap = map[string]int{
 	"second": 1,
 	"minute": 60,
