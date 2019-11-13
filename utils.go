@@ -9,7 +9,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func webhookSet() bool {
+func webhookIsSet() bool {
 	destURL := rootTelegramMethodURL + "/getWebhookInfo"
 	res, err := http.Get(destURL)
 

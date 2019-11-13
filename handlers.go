@@ -17,7 +17,7 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 
 		wait, err := getWaitTime(m.Payload)
 		if m.Payload == "" || err {
-			b.Send(m.Chat, "No valid match!")
+			b.Send(m.Chat, "No valid time units found!")
 			return
 		}
 
