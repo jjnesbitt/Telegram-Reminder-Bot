@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -34,9 +36,11 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 // Handles direct forwarded requests
 func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 	return func(m *tb.Message) {
-		if m.Sender.IsBot || (!m.Private() && m.Payload != "") {
+		if m.Sender.IsBot || !m.Private() {
 			return
 		}
+
+		log.Println("Private Message!")
 
 		if waitingMessage, ok := currentLimboUsers[m.Sender.ID]; ok {
 			// Already waiting

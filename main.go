@@ -20,6 +20,6 @@ func main() {
 	}
 
 	setHandlers(b)
-	println("Bot Started!")
+	log.Println("Bot Started!")
 	b.Start()
 }
