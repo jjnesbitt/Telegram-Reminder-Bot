@@ -8,3 +8,16 @@ services:
     ports:
       - "9000:9000"
     restart: unless-stopped
+
+  mongodb:
+    image: 'bitnami/mongodb:4.2.1'
+    ports:
+      - "27017:27017"
+    volumes:
+      - 'mongodb_data:/bitnami'
+    logging:
+      driver: none
+
+volumes:
+  mongodb_data:
+    driver: local
