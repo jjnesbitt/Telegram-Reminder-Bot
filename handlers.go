@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -18,7 +19,7 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 		}
 
 		wait, err := getWaitTime(m.Payload)
-		if m.Payload == "" || err {
+		if m.Payload == "" || err != nil {
 			b.Send(m.Chat, "No valid time units found!")
 			return
 		}
@@ -27,6 +28,11 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 			b.Send(m.Chat, "No message to forward!")
 			return
 		}
+
+		storedMessage := tb.StoredMessage{ChatID: m.Chat.ID, MessageID: strconv.Itoa(m.ID)}
+		res, err := dbCol.InsertOne(dbCtx, MessageReminder{StoredMessage: storedMessage, Time: wait.futureTimestamp, User: m.Sender})
+		// res.InsertedID
+		// dbCol.DeleteMany()
 
 		go confirmReminderSet(&wait, b, m.Chat)
 		go forwardMessageAfterDelay(wait.duration, b, m.Sender, m.ReplyTo)
@@ -45,7 +51,7 @@ func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 		if waitingMessage, ok := currentLimboUsers[m.Sender.ID]; ok {
 			// Already waiting
 			wait, err := getWaitTime(m.Text)
-			if err {
+			if err != nil {
 				b.Send(m.Sender, "No valid match! Aborting...")
 			} else {
 				go confirmReminderSet(&wait, b, m.Sender)

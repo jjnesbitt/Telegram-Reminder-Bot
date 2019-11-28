@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"log"
+	"time"
 
 	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -12,6 +14,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	initDB(ctx)
+	defer cancel()
 
 	pref := getBotPreferences()
 	b, err := tb.NewBot(pref)

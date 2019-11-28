@@ -8,10 +8,18 @@ import (
 
 // Wait represents a unit of time to wait
 type Wait struct {
-	units    string
-	quantity int
-	seconds  int
-	duration time.Duration
+	units           string
+	quantity        int
+	seconds         int64
+	duration        time.Duration
+	futureTimestamp int64
+}
+
+// MessageReminder stores a message
+type MessageReminder struct {
+	StoredMessage tb.StoredMessage `bson:"message"`
+	User          *tb.User         `bson:"user"`
+	Time          int64            `bson:"timestamp"`
 }
 
 var timeUnits = []string{"second", "minute", "hour", "day", "week", "month"}

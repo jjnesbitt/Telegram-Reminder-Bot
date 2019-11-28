@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -40,29 +41,30 @@ func confirmReminderSet(wait *Wait, b *tb.Bot, recipient tb.Recipient) {
 	b.Send(recipient, string)
 }
 
-func sendMessage(m *tb.Message) {
-
+func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
+	b.Forward(recipient, message)
 }
 
 func forwardMessageAfterDelay(delay time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
 	time.Sleep(delay)
-	b.Forward(recipient, message)
+	forwardMessage(b, recipient, message)
 }
 
-func getWaitTime(payload string) (Wait, bool) {
+func getWaitTime(payload string) (Wait, error) {
 	temp := strings.Join(timeUnits, "|")
 	waitExpr := regexp.MustCompile(`(\d+) (` + temp + `)s?`)
 
 	matches := waitExpr.FindStringSubmatch(payload)
 
 	if matches == nil {
-		return Wait{}, true
+		return Wait{}, errors.New("No matches found")
 	}
 
 	quant, _ := strconv.Atoi(matches[1])
 	units := matches[2]
-	seconds := quant * unitMap[units]
-	duration := time.Duration(int64(seconds * int(time.Second)))
+	seconds := int64(quant * unitMap[units])
+	duration := time.Duration(seconds * int64(time.Second))
+	futureTimestamp := time.Now().Unix() + int64(duration.Seconds())
 
-	return Wait{units: units, quantity: quant, seconds: seconds, duration: duration}, false
+	return Wait{units: units, quantity: quant, seconds: seconds, duration: duration, futureTimestamp: futureTimestamp}, nil
 }
