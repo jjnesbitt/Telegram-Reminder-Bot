@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -15,7 +14,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	initDB(ctx)
 	defer cancel()
 

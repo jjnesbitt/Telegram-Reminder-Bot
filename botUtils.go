@@ -45,9 +45,11 @@ func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
 	b.Forward(recipient, message)
 }
 
-func forwardMessageAfterDelay(delay time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	time.Sleep(delay)
-	forwardMessage(b, recipient, message)
+func forwardMessageAfterDelay(wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
+	id := storeMessageIntoDB(message, wait)
+	time.Sleep(wait.duration)
+	go forwardMessage(b, recipient, message)
+	go removeMessageFromDB(id)
 }
 
 func getWaitTime(payload string) (Wait, error) {
