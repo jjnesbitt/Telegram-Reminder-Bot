@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,7 +26,7 @@ var (
 func initDB(ctx context.Context) {
 	dbCtx = ctx
 
-	dbString := fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGO_URL"), os.Getenv("MONGO_PORT"))
+	dbString := fmt.Sprintf("mongodb://%s:%s", mongoURL, mongoPort)
 	client, err := mongo.Connect(dbCtx, options.Client().ApplyURI(dbString))
 	dbClient = client
 
