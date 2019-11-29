@@ -8,15 +8,19 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func main() {
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	dbCancel = cancel
 	initDB(ctx)
-	defer cancel()
+}
+
+func main() {
+	defer dbCancel()
 
 	pref := getBotPreferences()
 	b, err := tb.NewBot(pref)

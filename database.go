@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,11 +21,14 @@ var (
 	dbCtx    context.Context
 	dbCursor *mongo.Database
 	dbCol    *mongo.Collection
+	dbCancel context.CancelFunc
 )
 
 func initDB(ctx context.Context) {
 	dbCtx = ctx
-	client, err := mongo.Connect(dbCtx, options.Client().ApplyURI("mongodb://localhost:9000"))
+
+	dbString := fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGO_URL"), os.Getenv("MONGO_PORT"))
+	client, err := mongo.Connect(dbCtx, options.Client().ApplyURI(dbString))
 	dbClient = client
 
 	dbCursor = dbClient.Database("telegram")
