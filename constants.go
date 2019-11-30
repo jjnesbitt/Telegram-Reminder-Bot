@@ -15,11 +15,12 @@ type Wait struct {
 	futureTimestamp int64
 }
 
-// MessageReminder stores a message
-type MessageReminder struct {
-	StoredMessage tb.StoredMessage `bson:"message"`
-	User          *tb.User         `bson:"user"`
-	Time          int64            `bson:"timestamp"`
+// StoredReminder stores a message
+type StoredReminder struct {
+	ChatID    int64    `bson:"chat_id"`
+	MessageID int      `bson:"message_id"`
+	User      *tb.User `bson:"user"`
+	Time      int64    `bson:"timestamp"`
 }
 
 var timeUnits = []string{"second", "minute", "hour", "day", "week", "month"}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -38,9 +37,11 @@ func initDB(ctx context.Context) {
 	}
 }
 
-func storeMessageIntoDB(m *tb.Message, wait Wait) primitive.ObjectID {
-	storedMessage := tb.StoredMessage{ChatID: m.Chat.ID, MessageID: strconv.Itoa(m.ID)}
-	res, err := dbCol.InsertOne(dbCtx, MessageReminder{StoredMessage: storedMessage, Time: wait.futureTimestamp, User: m.Sender})
+func storeMessageIntoDB(m *tb.Message, recipient *tb.User, wait Wait) primitive.ObjectID {
+	// Returns ObjectID of stored document
+	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Time: wait.futureTimestamp}
+
+	res, err := dbCol.InsertOne(dbCtx, storedReminder)
 
 	if err != nil {
 		log.Panic(err)

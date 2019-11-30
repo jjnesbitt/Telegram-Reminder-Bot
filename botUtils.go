@@ -46,7 +46,7 @@ func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
 }
 
 func forwardMessageAfterDelay(wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	id := storeMessageIntoDB(message, wait)
+	id := storeMessageIntoDB(message, recipient, wait)
 	time.Sleep(wait.duration)
 	go forwardMessage(b, recipient, message)
 	go removeMessageFromDB(id)

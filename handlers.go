@@ -1,22 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
+	"go.mongodb.org/mongo-driver/bson"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func setHandlers(b *tb.Bot) {
 	b.Handle("/remindme", remindMeHandler(b))
+	b.Handle("/cancel", cancelHandler(b))
 	b.Handle(tb.OnText, onTextHandler(b))
 }
 
 func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 	return func(m *tb.Message) {
-		if m.Sender.IsBot {
-			return
-		}
-
 		wait, err := getWaitTime(m.Payload)
 		if m.Payload == "" || err != nil {
 			b.Send(m.Chat, "No valid time units found!")
@@ -33,10 +32,47 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 	}
 }
 
+func cancelHandler(b *tb.Bot) func(m *tb.Message) {
+	return func(m *tb.Message) {
+		if !m.Private() {
+			b.Send(m.Chat, "Must be done in private chat!")
+			return
+		}
+
+		fmt.Println("YOOOO")
+
+		cur, err := dbCol.Find(dbCtx, bson.M{"user.id": m.Sender.ID})
+		defer cur.Close(dbCtx)
+
+		var reminders []StoredReminder
+		cur.All(dbCtx, &reminders)
+
+		if len(reminders) == 0 {
+			b.Send(m.Chat, "No Pending Reminders!")
+			return
+		}
+
+		for i := range reminders {
+			fmt.Println(reminders[i].User.Username)
+
+			messageID := reminders[i].MessageID
+			chat := tb.Chat{ID: reminders[i].ChatID}
+			message := tb.Message{ID: messageID, Chat: &chat}
+
+			forwardMessage(b, m.Sender, &message)
+		}
+
+		if err != nil {
+			b.Send(m.Chat, "Error Finding Reminders!")
+		}
+
+	}
+}
+
 // Handles direct forwarded requests
 func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 	return func(m *tb.Message) {
-		if m.Sender.IsBot || !m.Private() {
+		if !m.Private() {
 			return
 		}
 
@@ -55,8 +91,6 @@ func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 			delete(currentLimboUsers, m.Sender.ID)
 		} else {
 			currentLimboUsers[m.Sender.ID] = m
-			// options := tb.SendOptions{ReplyMarkup: &numKeyboardMarkup, ReplyTo: m}
-			// b.Send(m.Sender, "When should I remind you?", &options)
 			b.Send(m.Sender, "When should I remind you?")
 		}
 	}
