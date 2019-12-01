@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -22,6 +23,10 @@ var (
 	dbCancel context.CancelFunc
 )
 
+func messageFromStoredReminder(stored StoredReminder) tb.Message {
+	return tb.Message{ID: stored.MessageID, Chat: &tb.Chat{ID: stored.ChatID}}
+}
+
 func initDB(ctx context.Context) {
 	dbCtx = ctx
 
@@ -34,6 +39,47 @@ func initDB(ctx context.Context) {
 
 	if err != nil {
 		log.Fatal("Failed to connect to database!")
+	}
+}
+
+func getUserReminders(user *tb.User) ([]StoredReminder, error) {
+	var reminders []StoredReminder
+
+	cur, err := dbCol.Find(dbCtx, bson.M{"user.id": user.ID})
+	defer cur.Close(dbCtx)
+
+	if err != nil {
+		return reminders, err
+	}
+
+	cur.All(dbCtx, &reminders)
+	return reminders, nil
+}
+
+func loadStoredReminders(b *tb.Bot) {
+	var reminders []StoredReminder
+
+	cur, err := dbCol.Find(dbCtx, bson.D{})
+	defer cur.Close(dbCtx)
+
+	if err != nil {
+		log.Fatal("Error loading Saved Reminders")
+	}
+	cur.All(dbCtx, &reminders)
+
+	for i := range reminders {
+		timeDiff := reminders[i].Time - time.Now().Unix()
+		// message := tb.Message{ID: reminders[i].MessageID, Chat: reminders[i].ChatID}
+		message := messageFromStoredReminder(reminders[i])
+
+		if timeDiff <= 0 {
+			forwardMessage(b, reminders[i].User, &message)
+		} else {
+			wait := Wait{duration: time.Duration(timeDiff), futureTimestamp: reminders[i].Time}
+
+			// Fix to include ObjectID of cur result
+			// forwardStoredMessageAfterDelay(wait, b, reminders[i].User, &message)
+		}
 	}
 }
 

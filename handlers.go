@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"go.mongodb.org/mongo-driver/bson"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -39,13 +38,21 @@ func cancelHandler(b *tb.Bot) func(m *tb.Message) {
 			return
 		}
 
-		fmt.Println("YOOOO")
+		// cur, err := dbCol.Find(dbCtx, bson.M{"user.id": m.Sender.ID})
+		// defer cur.Close(dbCtx)
 
-		cur, err := dbCol.Find(dbCtx, bson.M{"user.id": m.Sender.ID})
-		defer cur.Close(dbCtx)
+		// if err != nil {
+		// 	b.Send(m.Chat, "Error Finding Reminders!")
+		// }
 
-		var reminders []StoredReminder
-		cur.All(dbCtx, &reminders)
+		// var reminders []StoredReminder
+		// cur.All(dbCtx, &reminders)
+
+		reminders, err := getUserReminders(m.Sender)
+		if err != nil {
+			b.Send(m.Chat, "Error Finding Reminders!")
+			return
+		}
 
 		if len(reminders) == 0 {
 			b.Send(m.Chat, "No Pending Reminders!")
@@ -61,11 +68,6 @@ func cancelHandler(b *tb.Bot) func(m *tb.Message) {
 
 			forwardMessage(b, m.Sender, &message)
 		}
-
-		if err != nil {
-			b.Send(m.Chat, "Error Finding Reminders!")
-		}
-
 	}
 }
 

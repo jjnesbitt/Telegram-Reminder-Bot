@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -45,11 +46,19 @@ func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
 	b.Forward(recipient, message)
 }
 
-func forwardMessageAfterDelay(wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	id := storeMessageIntoDB(message, recipient, wait)
+// TODO: Make all of thse store and pull from database each time instead of holding onto references
+func forwardStoredMessageAfterDelay(id primitive.ObjectID, wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
 	time.Sleep(wait.duration)
 	go forwardMessage(b, recipient, message)
 	go removeMessageFromDB(id)
+}
+
+func forwardMessageAfterDelay(wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
+	// time.Sleep(wait.duration)
+	// go forwardMessage(b, recipient, message)
+	// go removeMessageFromDB(id)
+	id := storeMessageIntoDB(message, recipient, wait)
+	forwardStoredMessageAfterDelay(id, wait, b, recipient, message)
 }
 
 func getWaitTime(payload string) (Wait, error) {

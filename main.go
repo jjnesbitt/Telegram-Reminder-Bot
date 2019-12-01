@@ -22,6 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	loadStoredReminders(b)
 	setHandlers(b)
 	log.Println("Bot Started!")
 	b.Start()
