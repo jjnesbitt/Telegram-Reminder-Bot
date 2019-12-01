@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -17,10 +18,11 @@ type Wait struct {
 
 // StoredReminder stores a message
 type StoredReminder struct {
-	ChatID    int64    `bson:"chat_id"`
-	MessageID int      `bson:"message_id"`
-	User      *tb.User `bson:"user"`
-	Time      int64    `bson:"timestamp"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	ChatID    int64              `bson:"chat_id"`
+	MessageID int                `bson:"message_id"`
+	User      *tb.User           `bson:"user"`
+	Time      int64              `bson:"timestamp"`
 }
 
 var timeUnits = []string{"second", "minute", "hour", "day", "week", "month"}

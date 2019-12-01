@@ -69,24 +69,24 @@ func loadStoredReminders(b *tb.Bot) {
 
 	for i := range reminders {
 		timeDiff := reminders[i].Time - time.Now().Unix()
-		// message := tb.Message{ID: reminders[i].MessageID, Chat: reminders[i].ChatID}
 		message := messageFromStoredReminder(reminders[i])
 
-		if timeDiff <= 0 {
-			forwardMessage(b, reminders[i].User, &message)
-		} else {
-			wait := Wait{duration: time.Duration(timeDiff), futureTimestamp: reminders[i].Time}
+		// TODO: Store time as seconds instead of nanoseconds
 
-			// Fix to include ObjectID of cur result
-			// forwardStoredMessageAfterDelay(wait, b, reminders[i].User, &message)
+		var wait Wait
+		if timeDiff <= 0 {
+			wait = Wait{}
+		} else {
+			wait = Wait{duration: time.Duration(timeDiff), futureTimestamp: reminders[i].Time}
 		}
+		// forwardMessage(b, reminders[i].User, &message)
+		forwardStoredMessageAfterDelay(reminders[i].ID, wait, b, reminders[i].User, &message)
 	}
 }
 
 func storeMessageIntoDB(m *tb.Message, recipient *tb.User, wait Wait) primitive.ObjectID {
 	// Returns ObjectID of stored document
 	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Time: wait.futureTimestamp}
-
 	res, err := dbCol.InsertOne(dbCtx, storedReminder)
 
 	if err != nil {
