@@ -47,15 +47,15 @@ func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
 }
 
 // TODO: Make all of thse store and pull from database each time instead of holding onto references
-func forwardStoredMessageAfterDelay(id primitive.ObjectID, wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	time.Sleep(wait.duration)
+func forwardStoredMessageAfterDelay(id primitive.ObjectID, duration time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
+	time.Sleep(duration)
 	go forwardMessage(b, recipient, message)
 	go removeMessageFromDB(id)
 }
 
-func forwardMessageAfterDelay(wait Wait, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	id := storeMessageIntoDB(message, recipient, wait)
-	forwardStoredMessageAfterDelay(id, wait, b, recipient, message)
+func forwardMessageAfterDelay(duration time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
+	id := storeMessageIntoDB(message, recipient, duration)
+	forwardStoredMessageAfterDelay(id, duration, b, recipient, message)
 }
 
 func getWaitTime(payload string) (Wait, error) {
@@ -70,9 +70,11 @@ func getWaitTime(payload string) (Wait, error) {
 
 	quant, _ := strconv.Atoi(matches[1])
 	units := matches[2]
+
+	// TODO: Fix how duration is being generated
 	seconds := int64(quant * unitMap[units])
 	duration := time.Duration(seconds * int64(time.Second))
-	futureTimestamp := time.Now().Unix() + int64(duration.Seconds())
 
-	return Wait{units: units, quantity: quant, seconds: seconds, duration: duration, futureTimestamp: futureTimestamp}, nil
+	futureTimestamp := time.Now().Add(duration)
+	return Wait{units: units, quantity: quant, seconds: seconds, duration: duration, futureTimestamp: futureTimestamp.Unix()}, nil
 }

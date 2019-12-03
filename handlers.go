@@ -27,7 +27,7 @@ func remindMeHandler(b *tb.Bot) func(m *tb.Message) {
 		}
 
 		go confirmReminderSet(&wait, b, m.Chat)
-		go forwardMessageAfterDelay(wait, b, m.Sender, m.ReplyTo)
+		go forwardMessageAfterDelay(wait.duration, b, m.Sender, m.ReplyTo)
 	}
 }
 
@@ -87,7 +87,7 @@ func onTextHandler(b *tb.Bot) func(m *tb.Message) {
 				b.Send(m.Sender, "No valid match! Aborting...")
 			} else {
 				go confirmReminderSet(&wait, b, m.Sender)
-				go forwardMessageAfterDelay(wait, b, m.Sender, waitingMessage)
+				go forwardMessageAfterDelay(wait.duration, b, m.Sender, waitingMessage)
 			}
 
 			delete(currentLimboUsers, m.Sender.ID)

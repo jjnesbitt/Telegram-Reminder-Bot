@@ -68,25 +68,17 @@ func loadStoredReminders(b *tb.Bot) {
 	cur.All(dbCtx, &reminders)
 
 	for i := range reminders {
-		timeDiff := reminders[i].Time - time.Now().Unix()
+		timestamp := time.Unix(reminders[i].Time, 0)
+		duration := timestamp.Sub(time.Now())
 		message := messageFromStoredReminder(reminders[i])
 
-		// TODO: Store time as seconds instead of nanoseconds
-
-		var wait Wait
-		if timeDiff <= 0 {
-			wait = Wait{}
-		} else {
-			wait = Wait{duration: time.Duration(timeDiff), futureTimestamp: reminders[i].Time}
-		}
-		// forwardMessage(b, reminders[i].User, &message)
-		forwardStoredMessageAfterDelay(reminders[i].ID, wait, b, reminders[i].User, &message)
+		go forwardStoredMessageAfterDelay(reminders[i].ID, duration, b, reminders[i].User, &message)
 	}
 }
 
-func storeMessageIntoDB(m *tb.Message, recipient *tb.User, wait Wait) primitive.ObjectID {
+func storeMessageIntoDB(m *tb.Message, recipient *tb.User, duration time.Duration) primitive.ObjectID {
 	// Returns ObjectID of stored document
-	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Time: wait.futureTimestamp}
+	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Time: int64(duration.Seconds())}
 	res, err := dbCol.InsertOne(dbCtx, storedReminder)
 
 	if err != nil {
@@ -98,6 +90,7 @@ func storeMessageIntoDB(m *tb.Message, recipient *tb.User, wait Wait) primitive.
 }
 
 func removeMessageFromDB(id primitive.ObjectID) int64 {
+	// Returns number of removed documents
 	res, err := dbCol.DeleteMany(dbCtx, bson.M{"_id": id})
 
 	if err != nil {
