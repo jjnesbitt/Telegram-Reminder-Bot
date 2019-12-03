@@ -21,9 +21,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	botInstance = b
 
-	loadStoredReminders(b)
-	setHandlers(b)
+	loadStoredReminders()
+	setHandlers()
+
 	log.Println("Bot Started!")
-	b.Start()
+	botInstance.Start()
 }

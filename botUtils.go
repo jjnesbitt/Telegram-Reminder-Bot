@@ -11,6 +11,9 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+// botInstance is the global instance of tb.Bot that all functions use
+var botInstance *tb.Bot
+
 func getBotPreferences() tb.Settings {
 	listenPort := ":" + envListenPort
 
@@ -36,26 +39,26 @@ func getBotPreferences() tb.Settings {
 	return pref
 }
 
-func confirmReminderSet(wait *Reminder, b *tb.Bot, recipient tb.Recipient) {
+func confirmReminderSet(wait *Reminder, recipient tb.Recipient) {
 	stringQuantity := strconv.Itoa(wait.quantity)
 	string := "Reminder set for " + stringQuantity + " " + wait.units + "s!"
-	b.Send(recipient, string)
+	botInstance.Send(recipient, string)
 }
 
-func forwardMessage(b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	b.Forward(recipient, message)
+func forwardMessage(recipient *tb.User, message *tb.Message) {
+	botInstance.Forward(recipient, message)
 }
 
 // TODO: Make all of thse store and pull from database each time instead of holding onto references
-func forwardStoredMessageAfterDelay(id primitive.ObjectID, duration time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
+func forwardStoredMessageAfterDelay(id primitive.ObjectID, duration time.Duration, recipient *tb.User, message *tb.Message) {
 	time.Sleep(duration)
-	go forwardMessage(b, recipient, message)
+	go forwardMessage(recipient, message)
 	go removeMessageFromDB(id)
 }
 
-func forwardMessageAfterDelay(duration time.Duration, b *tb.Bot, recipient *tb.User, message *tb.Message) {
-	id := storeMessageIntoDB(message, recipient, duration)
-	forwardStoredMessageAfterDelay(id, duration, b, recipient, message)
+func forwardMessageAfterDelay(wait Reminder, recipient *tb.User, message *tb.Message) {
+	id := storeMessageIntoDB(message, recipient, wait.timestamp)
+	forwardStoredMessageAfterDelay(id, wait.duration, recipient, message)
 }
 
 func getWaitTime(payload string) (Reminder, error) {
@@ -73,8 +76,7 @@ func getWaitTime(payload string) (Reminder, error) {
 
 	// TODO: Fix how duration is being generated
 	seconds := int64(quant * unitMap[units])
-	duration := time.Duration(seconds * int64(time.Second))
-
+	duration := time.Duration(seconds) * time.Second
 	timestamp := time.Now().Add(duration)
 	return Reminder{units: units, quantity: quant, duration: duration, timestamp: timestamp.Unix()}, nil
 }

@@ -56,7 +56,7 @@ func getUserReminders(user *tb.User) ([]StoredReminder, error) {
 	return reminders, nil
 }
 
-func loadStoredReminders(b *tb.Bot) {
+func loadStoredReminders() {
 	var reminders []StoredReminder
 
 	cur, err := dbCol.Find(dbCtx, bson.D{})
@@ -72,13 +72,13 @@ func loadStoredReminders(b *tb.Bot) {
 		duration := timestamp.Sub(time.Now())
 		message := messageFromStoredReminder(reminders[i])
 
-		go forwardStoredMessageAfterDelay(reminders[i].ID, duration, b, reminders[i].User, &message)
+		go forwardStoredMessageAfterDelay(reminders[i].ID, duration, reminders[i].User, &message)
 	}
 }
 
-func storeMessageIntoDB(m *tb.Message, recipient *tb.User, duration time.Duration) primitive.ObjectID {
+func storeMessageIntoDB(m *tb.Message, recipient *tb.User, timestamp int64) primitive.ObjectID {
 	// Returns ObjectID of stored document
-	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Timestamp: int64(duration.Seconds())}
+	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Timestamp: timestamp}
 	res, err := dbCol.InsertOne(dbCtx, storedReminder)
 
 	if err != nil {
