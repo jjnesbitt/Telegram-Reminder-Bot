@@ -68,7 +68,7 @@ func loadStoredReminders(b *tb.Bot) {
 	cur.All(dbCtx, &reminders)
 
 	for i := range reminders {
-		timestamp := time.Unix(reminders[i].Time, 0)
+		timestamp := time.Unix(reminders[i].Timestamp, 0)
 		duration := timestamp.Sub(time.Now())
 		message := messageFromStoredReminder(reminders[i])
 
@@ -78,7 +78,7 @@ func loadStoredReminders(b *tb.Bot) {
 
 func storeMessageIntoDB(m *tb.Message, recipient *tb.User, duration time.Duration) primitive.ObjectID {
 	// Returns ObjectID of stored document
-	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Time: int64(duration.Seconds())}
+	storedReminder := StoredReminder{ChatID: m.Chat.ID, MessageID: m.ID, User: recipient, Timestamp: int64(duration.Seconds())}
 	res, err := dbCol.InsertOne(dbCtx, storedReminder)
 
 	if err != nil {

@@ -7,13 +7,12 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-// Wait represents a unit of time to wait
-type Wait struct {
-	units           string
-	quantity        int
-	seconds         int64
-	duration        time.Duration
-	futureTimestamp int64
+// Reminder represents a unit of time to wait
+type Reminder struct {
+	units     string
+	quantity  int
+	duration  time.Duration
+	timestamp int64
 }
 
 // StoredReminder stores a message
@@ -22,7 +21,7 @@ type StoredReminder struct {
 	ChatID    int64              `bson:"chat_id"`
 	MessageID int                `bson:"message_id"`
 	User      *tb.User           `bson:"user"`
-	Time      int64              `bson:"timestamp"`
+	Timestamp int64              `bson:"timestamp"`
 }
 
 var timeUnits = []string{"second", "minute", "hour", "day", "week", "month"}

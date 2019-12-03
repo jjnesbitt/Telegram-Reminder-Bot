@@ -7,7 +7,7 @@ This is a bot for telegram that will remind users of things, by forwarding messa
 - Forward a message directly to the bot, and specified the wait time after it replies to you.
 
 
-Wait times can be of the format `<integer>` `[seconds, minutes, hours, days, weeks, months, years]`
+Reminder times can be of the format `<integer>` `[seconds, minutes, hours, days, weeks, months, years]`
 
 ### TODO
 * Add storing reminders in database for reminder listing, and early deletion

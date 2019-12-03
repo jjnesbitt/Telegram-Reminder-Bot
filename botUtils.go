@@ -36,7 +36,7 @@ func getBotPreferences() tb.Settings {
 	return pref
 }
 
-func confirmReminderSet(wait *Wait, b *tb.Bot, recipient tb.Recipient) {
+func confirmReminderSet(wait *Reminder, b *tb.Bot, recipient tb.Recipient) {
 	stringQuantity := strconv.Itoa(wait.quantity)
 	string := "Reminder set for " + stringQuantity + " " + wait.units + "s!"
 	b.Send(recipient, string)
@@ -58,14 +58,14 @@ func forwardMessageAfterDelay(duration time.Duration, b *tb.Bot, recipient *tb.U
 	forwardStoredMessageAfterDelay(id, duration, b, recipient, message)
 }
 
-func getWaitTime(payload string) (Wait, error) {
+func getWaitTime(payload string) (Reminder, error) {
 	temp := strings.Join(timeUnits, "|")
 	waitExpr := regexp.MustCompile(`(\d+) (` + temp + `)s?`)
 
 	matches := waitExpr.FindStringSubmatch(payload)
 
 	if matches == nil {
-		return Wait{}, errors.New("No matches found")
+		return Reminder{}, errors.New("No matches found")
 	}
 
 	quant, _ := strconv.Atoi(matches[1])
@@ -75,6 +75,6 @@ func getWaitTime(payload string) (Wait, error) {
 	seconds := int64(quant * unitMap[units])
 	duration := time.Duration(seconds * int64(time.Second))
 
-	futureTimestamp := time.Now().Add(duration)
-	return Wait{units: units, quantity: quant, seconds: seconds, duration: duration, futureTimestamp: futureTimestamp.Unix()}, nil
+	timestamp := time.Now().Add(duration)
+	return Reminder{units: units, quantity: quant, duration: duration, timestamp: timestamp.Unix()}, nil
 }
