@@ -39,7 +39,7 @@ func getBotPreferences() tb.Settings {
 	return pref
 }
 
-func confirmReminderSet(wait *Reminder, recipient tb.Recipient) {
+func confirmReminderSet(wait Reminder, recipient tb.Recipient) {
 	stringQuantity := strconv.Itoa(wait.quantity)
 	string := "Reminder set for " + stringQuantity + " " + wait.units + "s!"
 	botInstance.Send(recipient, string)

@@ -25,7 +25,7 @@ func remindMeHandler(m *tb.Message) {
 		return
 	}
 
-	go confirmReminderSet(&wait, m.Chat)
+	go confirmReminderSet(wait, m.Chat)
 	go forwardMessageAfterDelay(wait, m.Sender, m.ReplyTo)
 }
 
@@ -81,7 +81,7 @@ func onTextHandler(m *tb.Message) {
 		if err != nil {
 			botInstance.Send(m.Sender, "No valid match! Aborting...")
 		} else {
-			go confirmReminderSet(&wait, m.Sender)
+			go confirmReminderSet(wait, m.Sender)
 			go forwardMessageAfterDelay(wait, m.Sender, waitingMessage)
 		}
 
