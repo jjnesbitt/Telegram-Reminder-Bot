@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -49,16 +50,24 @@ func forwardMessage(recipient *tb.User, message *tb.Message) {
 	botInstance.Forward(recipient, message)
 }
 
-// TODO: Make all of thse store and pull from database each time instead of holding onto references
-func forwardStoredMessageAfterDelay(id primitive.ObjectID, duration time.Duration, recipient *tb.User, message *tb.Message) {
+func forwardStoredMessageAfterDelay(id primitive.ObjectID, duration time.Duration) {
 	time.Sleep(duration)
-	go forwardMessage(recipient, message)
+
+	rem, err := getStoredReminderFromID(id)
+	if err != nil {
+		log.Println("Message unable to be retrieved or no longer in database")
+		return
+	}
+
+	message := messageFromStoredReminder(rem)
+
+	go forwardMessage(rem.User, &message)
 	go removeMessageFromDB(id)
 }
 
 func forwardMessageAfterDelay(wait Reminder, recipient *tb.User, message *tb.Message) {
 	id := storeMessageIntoDB(message, recipient, wait.timestamp)
-	forwardStoredMessageAfterDelay(id, wait.duration, recipient, message)
+	forwardStoredMessageAfterDelay(id, wait.duration)
 }
 
 func getWaitTime(payload string) (Reminder, error) {

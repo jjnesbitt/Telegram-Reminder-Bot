@@ -70,10 +70,23 @@ func loadStoredReminders() {
 	for i := range reminders {
 		timestamp := time.Unix(reminders[i].Timestamp, 0)
 		duration := timestamp.Sub(time.Now())
-		message := messageFromStoredReminder(reminders[i])
 
-		go forwardStoredMessageAfterDelay(reminders[i].ID, duration, reminders[i].User, &message)
+		go forwardStoredMessageAfterDelay(reminders[i].ID, duration)
 	}
+}
+
+func getStoredReminderFromID(id primitive.ObjectID) (StoredReminder, error) {
+	reminder := StoredReminder{}
+
+	res := dbCol.FindOne(dbCtx, bson.M{"_id": id})
+	err := res.Decode(&reminder)
+
+	if err != nil {
+		log.Println("Unable to load DB message from ID")
+		return reminder, err
+	}
+
+	return reminder, nil
 }
 
 func storeMessageIntoDB(m *tb.Message, recipient *tb.User, timestamp int64) primitive.ObjectID {
