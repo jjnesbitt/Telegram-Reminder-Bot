@@ -1,19 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func setHandlers() {
+	// TODO: Add /list handler
 	botInstance.Handle("/remindme", remindMeHandler)
 	botInstance.Handle("/cancel", cancelHandler)
 
 	botInstance.Handle(tb.OnText, onTextHandler)
-	botInstance.Handle(tb.OnCallback, deleteReminderHandler)
+	botInstance.Handle(tb.OnCallback, deleteReminderCallback)
 }
 
 func remindMeHandler(m *tb.Message) {
@@ -59,14 +62,6 @@ func cancelHandler(m *tb.Message) {
 	botInstance.Send(m.Sender, "Which reminder do you want to cancel?", &tb.ReplyMarkup{InlineKeyboard: buttonArray, ReplyKeyboardRemove: true})
 }
 
-func deleteReminderHandler(c *tb.Callback) {
-	// TODO: Actually cancel reminder
-
-	botInstance.Edit(c.Message, "Reminder cancelled!", &tb.ReplyMarkup{})
-	botInstance.EditReplyMarkup(c.Message, &tb.ReplyMarkup{})
-	fmt.Println(c.ID)
-}
-
 // Handles direct forwarded requests
 func onTextHandler(m *tb.Message) {
 	if !m.Private() {
@@ -90,4 +85,18 @@ func onTextHandler(m *tb.Message) {
 		currentLimboUsers[m.Sender.ID] = m
 		botInstance.Send(m.Sender, "When should I remind you?")
 	}
+}
+
+func deleteReminderCallback(c *tb.Callback) {
+	idStr := strings.Split(c.Data, "|")[1]
+	id, _ := primitive.ObjectIDFromHex(idStr)
+
+	// fmt.Println(c.ID)
+
+	// removed := removeMessageFromDB(id)
+	// fmt.Println(removed)
+	removeMessageFromDB(id)
+
+	botInstance.Edit(c.Message, "Reminder cancelled!", &tb.ReplyMarkup{})
+	botInstance.EditReplyMarkup(c.Message, &tb.ReplyMarkup{})
 }
