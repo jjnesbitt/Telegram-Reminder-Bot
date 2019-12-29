@@ -10,8 +10,9 @@ This is a bot for telegram that will remind users of things, by forwarding messa
 Reminder times can be of the format `<integer>` `[seconds, minutes, hours, days, weeks, months, years]`
 
 ### TODO
-* Add storing reminders in database for reminder listing, and early deletion
-* Add command to cancel reminders as mentioned above
+- [x] Add storing reminders in database for reminder listing, and early deletion
+- [x] Add command to cancel reminders as mentioned above
+- [ ] Fix code organization to remove so many global variables
 
 <br/>
 <br/>
