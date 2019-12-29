@@ -17,7 +17,7 @@ func setHandlers() {
 	botInstance.Handle("/list", listHandler)
 
 	botInstance.Handle(tb.OnText, onTextHandler)
-	botInstance.Handle(tb.OnCallback, deleteReminderCallback)
+	botInstance.Handle(tb.OnCallback, callbackHandler)
 }
 
 func remindMeHandler(m *tb.Message) {
@@ -48,9 +48,10 @@ func cancelHandler(m *tb.Message) {
 
 		for i := range reminders {
 			messageText := time.Unix(reminders[i].Timestamp, 0).String()
-			buttonRow := []tb.InlineButton{tb.InlineButton{Unique: "delete_reminder", Text: messageText, Data: reminders[i].ID.Hex()}}
+			buttonRow := []tb.InlineButton{tb.InlineButton{Unique: CallbackCancelReminder, Text: messageText, Data: reminders[i].ID.Hex()}}
 			buttonArray = append(buttonArray, buttonRow)
 		}
+		buttonArray = append(buttonArray, []tb.InlineButton{tb.InlineButton{Unique: CallbackAbortCancel, Text: "Abort"}})
 		botInstance.Send(m.Sender, "Which reminder do you want to cancel?", &tb.ReplyMarkup{InlineKeyboard: buttonArray, ReplyKeyboardRemove: true})
 	}
 }
@@ -98,16 +99,21 @@ func onTextHandler(m *tb.Message) {
 	}
 }
 
-func deleteReminderCallback(c *tb.Callback) {
-	idStr := strings.Split(c.Data, "|")[1]
-	id, _ := primitive.ObjectIDFromHex(idStr)
+func callbackHandler(c *tb.Callback) {
+	data := strings.TrimSpace(c.Data)
 
-	// fmt.Println(c.ID)
+	identifiers := strings.Split(data, "|")
+	unique := identifiers[0]
 
-	// removed := removeMessageFromDB(id)
-	// fmt.Println(removed)
-	removeMessageFromDB(id)
+	switch unique {
+	case CallbackCancelReminder:
+		idStr := identifiers[1]
+		id, _ := primitive.ObjectIDFromHex(idStr)
 
-	botInstance.Edit(c.Message, "Reminder cancelled!", &tb.ReplyMarkup{})
-	botInstance.EditReplyMarkup(c.Message, &tb.ReplyMarkup{})
+		removeMessageFromDB(id)
+		botInstance.Edit(c.Message, "Reminder cancelled!", &tb.ReplyMarkup{})
+
+	case CallbackAbortCancel:
+		botInstance.Edit(c.Message, "No reminders cancelled", &tb.ReplyMarkup{})
+	}
 }
