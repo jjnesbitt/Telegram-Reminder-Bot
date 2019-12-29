@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -10,7 +11,9 @@ import (
 func setHandlers() {
 	botInstance.Handle("/remindme", remindMeHandler)
 	botInstance.Handle("/cancel", cancelHandler)
+
 	botInstance.Handle(tb.OnText, onTextHandler)
+	botInstance.Handle(tb.OnCallback, deleteReminderHandler)
 }
 
 func remindMeHandler(m *tb.Message) {
@@ -35,16 +38,6 @@ func cancelHandler(m *tb.Message) {
 		return
 	}
 
-	// cur, err := dbCol.Find(dbCtx, bson.M{"user.id": m.Sender.ID})
-	// defer cur.Close(dbCtx)
-
-	// if err != nil {
-	// 	botInstance.Send(m.Chat, "Error Finding Reminders!")
-	// }
-
-	// var reminders []StoredReminder
-	// cur.All(dbCtx, &reminders)
-
 	reminders, err := getUserReminders(m.Sender)
 	if err != nil {
 		botInstance.Send(m.Chat, "Error Finding Reminders!")
@@ -56,15 +49,22 @@ func cancelHandler(m *tb.Message) {
 		return
 	}
 
+	var buttonArray [][]tb.InlineButton
+
 	for i := range reminders {
-		fmt.Println(reminders[i].User.Username)
-
-		messageID := reminders[i].MessageID
-		chat := tb.Chat{ID: reminders[i].ChatID}
-		message := tb.Message{ID: messageID, Chat: &chat}
-
-		forwardMessage(m.Sender, &message)
+		messageText := time.Unix(reminders[i].Timestamp, 0).String()
+		buttonRow := []tb.InlineButton{tb.InlineButton{Unique: "delete_reminder", Text: messageText, Data: reminders[i].ID.Hex()}}
+		buttonArray = append(buttonArray, buttonRow)
 	}
+	botInstance.Send(m.Sender, "Which reminder do you want to cancel?", &tb.ReplyMarkup{InlineKeyboard: buttonArray, ReplyKeyboardRemove: true})
+}
+
+func deleteReminderHandler(c *tb.Callback) {
+	// TODO: Actually cancel reminder
+
+	botInstance.Edit(c.Message, "Reminder cancelled!", &tb.ReplyMarkup{})
+	botInstance.EditReplyMarkup(c.Message, &tb.ReplyMarkup{})
+	fmt.Println(c.ID)
 }
 
 // Handles direct forwarded requests
