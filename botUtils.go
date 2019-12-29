@@ -40,6 +40,31 @@ func getBotPreferences() tb.Settings {
 	return pref
 }
 
+func reminderHelper(m *tb.Message) ([]StoredReminder, bool) {
+	done := true
+	reminders, err := getUserReminders(m.Sender)
+
+	if err != nil {
+		botInstance.Send(m.Chat, "Error Finding Reminders!")
+	} else if len(reminders) == 0 {
+		botInstance.Send(m.Chat, "No Pending Reminders!")
+	} else {
+		done = false
+	}
+
+	return reminders, done
+}
+
+func privateMessageHelper(m *tb.Message, silent bool) bool {
+	if !m.Private() {
+		if !silent {
+			botInstance.Send(m.Chat, "Must be done in private chat!")
+		}
+		return true
+	}
+	return false
+}
+
 func confirmReminderSet(wait Reminder, recipient tb.Recipient) {
 	stringQuantity := strconv.Itoa(wait.quantity)
 	string := "Reminder set for " + stringQuantity + " " + wait.units + "s!"

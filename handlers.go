@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,9 +12,9 @@ import (
 )
 
 func setHandlers() {
-	// TODO: Add /list handler
 	botInstance.Handle("/remindme", remindMeHandler)
 	botInstance.Handle("/cancel", cancelHandler)
+	botInstance.Handle("/list", listHandler)
 
 	botInstance.Handle(tb.OnText, onTextHandler)
 	botInstance.Handle(tb.OnCallback, deleteReminderCallback)
@@ -36,35 +37,45 @@ func remindMeHandler(m *tb.Message) {
 }
 
 func cancelHandler(m *tb.Message) {
-	if !m.Private() {
-		botInstance.Send(m.Chat, "Must be done in private chat!")
+	if privateMessageHelper(m, false) {
 		return
 	}
 
-	reminders, err := getUserReminders(m.Sender)
-	if err != nil {
-		botInstance.Send(m.Chat, "Error Finding Reminders!")
+	reminders, done := reminderHelper(m)
+
+	if !done {
+		var buttonArray [][]tb.InlineButton
+
+		for i := range reminders {
+			messageText := time.Unix(reminders[i].Timestamp, 0).String()
+			buttonRow := []tb.InlineButton{tb.InlineButton{Unique: "delete_reminder", Text: messageText, Data: reminders[i].ID.Hex()}}
+			buttonArray = append(buttonArray, buttonRow)
+		}
+		botInstance.Send(m.Sender, "Which reminder do you want to cancel?", &tb.ReplyMarkup{InlineKeyboard: buttonArray, ReplyKeyboardRemove: true})
+	}
+}
+
+func listHandler(m *tb.Message) {
+	if privateMessageHelper(m, false) {
 		return
 	}
 
-	if len(reminders) == 0 {
-		botInstance.Send(m.Chat, "No Pending Reminders!")
-		return
-	}
+	reminders, done := reminderHelper(m)
 
-	var buttonArray [][]tb.InlineButton
+	if !done {
+		textArray := []string{"You have " + strconv.Itoa(len(reminders)) + " active reminders:"}
+		for i := range reminders {
+			textArray = append(textArray, time.Unix(reminders[i].Timestamp, 0).String())
+		}
 
-	for i := range reminders {
-		messageText := time.Unix(reminders[i].Timestamp, 0).String()
-		buttonRow := []tb.InlineButton{tb.InlineButton{Unique: "delete_reminder", Text: messageText, Data: reminders[i].ID.Hex()}}
-		buttonArray = append(buttonArray, buttonRow)
+		text := strings.Join(textArray, "\n")
+		botInstance.Send(m.Sender, text)
 	}
-	botInstance.Send(m.Sender, "Which reminder do you want to cancel?", &tb.ReplyMarkup{InlineKeyboard: buttonArray, ReplyKeyboardRemove: true})
 }
 
 // Handles direct forwarded requests
 func onTextHandler(m *tb.Message) {
-	if !m.Private() {
+	if privateMessageHelper(m, true) {
 		return
 	}
 
