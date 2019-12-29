@@ -7,6 +7,15 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+// Unique identifiers for various inline callbacks
+const (
+	// Selected reminder to cancel
+	CallbackCancelReminder = "cancel_reminder"
+
+	// To abort the /cancel command
+	CallbackAbortCancel = "abort_cancel"
+)
+
 // Reminder represents a unit of time to wait
 type Reminder struct {
 	units     string
