@@ -23,7 +23,7 @@ func getBotPreferences() tb.Settings {
 		Endpoint: &tb.WebhookEndpoint{PublicURL: publicURL},
 	}
 
-	if envMode != "production" {
+	if botMode != "production" {
 		deleteWebhook()
 		poller = &tb.LongPoller{Timeout: 1 * time.Second}
 	} else {
