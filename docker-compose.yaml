@@ -9,7 +9,7 @@ services:
       - "9000:9000"
     restart: unless-stopped
 
-  mongodb:
+  db:
     image: 'bitnami/mongodb:4.2.1'
     ports:
       - "${MONGO_PORT}:27017"

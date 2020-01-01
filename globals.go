@@ -12,13 +12,22 @@ var (
 	envBotToken           string
 	envListenPort         string
 	envRootPublicURL      string
-	envMode               string
+	botMode               string
 	publicURL             string
 	rootTelegramMethodURL string
-	mongoURL              string
+	mongoHostname         string
 	mongoPort             string
 	currentLimboUsers     map[int]*tb.Message = make(map[int]*tb.Message)
 )
+
+// Simple helper function to read an environment or return a default value
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultVal
+}
 
 func init() {
 	err := godotenv.Load()
@@ -32,9 +41,9 @@ func init() {
 	envRootPublicURL = os.Getenv("ROOT_PUBLIC_URL")
 	publicURL = envRootPublicURL + "/" + envBotToken
 
-	envListenPort = os.Getenv("LISTEN_PORT")
-	envMode = os.Getenv("BOT_MODE")
+	envListenPort = getEnv("LISTEN_PORT", "9000")
+	botMode = getEnv("BOT_MODE", "development")
 
-	mongoURL = os.Getenv("MONGO_URL")
-	mongoPort = os.Getenv("MONGO_PORT")
+	mongoHostname = getEnv("MONGO_HOSTNAME", "localhost")
+	mongoPort = getEnv("MONGO_PORT", "27017")
 }

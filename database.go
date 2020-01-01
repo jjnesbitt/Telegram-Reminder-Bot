@@ -30,7 +30,7 @@ func messageFromStoredReminder(stored StoredReminder) tb.Message {
 func initDB(ctx context.Context) {
 	dbCtx = ctx
 
-	dbString := fmt.Sprintf("mongodb://%s:%s", mongoURL, mongoPort)
+	dbString := fmt.Sprintf("mongodb://%s:%s", mongoHostname, mongoPort)
 	client, err := mongo.Connect(dbCtx, options.Client().ApplyURI(dbString))
 	dbClient = client
 
