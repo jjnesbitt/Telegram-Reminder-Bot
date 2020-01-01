@@ -30,7 +30,7 @@ func getEnv(key string, defaultVal string) string {
 }
 
 func init() {
-	err := godotenv.Load()
+	err := godotenv.Overload(".env.default", ".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
