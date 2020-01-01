@@ -10,20 +10,20 @@ WORKDIR /app
 
 # Copy files
 COPY *.go ./
+COPY go.mod .
+COPY go.sum .
 COPY .env .
 
-# Download all dependancies. Dependencies will be cached if the go.mod and go.sum files are not changed
-# RUN go mod download
+# Necessary to avoid needing gcc
+ENV CGO_ENABLED=0
 
-# Install dependencies
-RUN go get github.com/joho/godotenv
-RUN go get gopkg.in/tucnak/telebot.v2
-RUN go get github.com/tidwall/gjson
+# Download all dependancies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
 
 # Build the Go app
 RUN go build -o main .
 
-# Expose port 8080 to the outside world
+# Expose port to the outside world
 EXPOSE 9000
 
 # Run the executable
