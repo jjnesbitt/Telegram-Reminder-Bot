@@ -23,8 +23,5 @@ RUN go mod download
 # Build the Go app
 RUN go build -o main .
 
-# Expose port to the outside world
-EXPOSE 9000
-
 # Run the executable
 CMD ["./main"]
