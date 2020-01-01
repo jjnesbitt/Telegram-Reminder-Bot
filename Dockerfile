@@ -12,7 +12,9 @@ WORKDIR /app
 COPY *.go ./
 COPY go.mod .
 COPY go.sum .
-COPY .env .
+
+COPY .env* ./
+
 
 # Necessary to avoid needing gcc
 ENV CGO_ENABLED=0
