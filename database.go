@@ -112,3 +112,13 @@ func removeMessageFromDB(id primitive.ObjectID) int64 {
 
 	return res.DeletedCount
 }
+
+func removeAllUserMessages(*tb.User) error {
+	_, err := dbCol.DeleteMany(dbCtx, bson.M{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

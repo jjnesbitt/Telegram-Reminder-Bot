@@ -9,6 +9,9 @@ import (
 
 // Unique identifiers for various inline callbacks
 const (
+	// Cancel all reminders for user
+	CallbackCancelAll = "cancel_all_reminders"
+
 	// Selected reminder to cancel
 	CallbackCancelReminder = "cancel_reminder"
 

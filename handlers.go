@@ -46,6 +46,8 @@ func cancelHandler(m *tb.Message) {
 	if !done {
 		var buttonArray [][]tb.InlineButton
 
+		buttonArray = append(buttonArray, []tb.InlineButton{tb.InlineButton{Unique: CallbackCancelAll, Text: "Cancel All"}})
+
 		for i := range reminders {
 			messageText := time.Unix(reminders[i].Timestamp, 0).String()
 			buttonRow := []tb.InlineButton{tb.InlineButton{Unique: CallbackCancelReminder, Text: messageText, Data: reminders[i].ID.Hex()}}
@@ -106,6 +108,10 @@ func callbackHandler(c *tb.Callback) {
 	unique := identifiers[0]
 
 	switch unique {
+	case CallbackCancelAll:
+		removeAllUserMessages(c.Sender)
+		botInstance.Edit(c.Message, "All reminders cancelled!", &tb.ReplyMarkup{})
+
 	case CallbackCancelReminder:
 		idStr := identifiers[1]
 		id, _ := primitive.ObjectIDFromHex(idStr)
